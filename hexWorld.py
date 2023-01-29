@@ -1,7 +1,6 @@
 from gameWorld import GameWorld, Piece
 
 
-
 class HexWorld(GameWorld):
     def check_win(self, player: int):
         # Check if the player has at least one piece on every layer from start to finish
@@ -23,8 +22,7 @@ class HexWorld(GameWorld):
         while (len(nodes) > 0):
             node = nodes.pop()
             frontier.append((node.x, node.y))
-            neighbors = list(filter(is_in_frontier, list(filter(self.is_player_n(player), self.neighbors_of_piece(node)))))
+            neighbors = list(
+                filter(is_in_frontier, list(filter(self.is_player_n(player), self.neighbors_of_piece(node)))))
 
         # TODO complete search
-
-
