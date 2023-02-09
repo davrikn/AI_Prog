@@ -5,11 +5,12 @@ from math import *
 
 
 class HexGame(HexWorld):
-    def __init__(self, size: int):
-        super().__init__(size)
+    def __init__(self, hex_world: HexWorld):
+        super().__init__(hex_world.size)
         screen_width = 750
         screen_height = 500
 
+        self.hex_world = hex_world
         self.running = True
         self.player_won = False
 
@@ -25,10 +26,14 @@ class HexGame(HexWorld):
         self.draw_board()
 
         while self.running:
+
             # Did the user click the window close button?
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                else:
+                    # print(event)
+                    pass
                 # Update display
                 pygame.display.flip()
 
@@ -50,8 +55,11 @@ class HexGame(HexWorld):
     # Draws a single Hexagon on the board
     def draw_hexagon(self, position: tuple[int, int], color: str):
         white_hex = pygame.image.load('ui/hex-white.png')
+        # white_hex = HexSprite(color="red")
         blue_hex = pygame.image.load('ui/hex_blue_50x50.png')
+        # blue_hex = HexSprite(color="blue")
         red_hex = pygame.image.load('ui/hex_red_50x50.png')
+        # red_hex = HexSprite(color="red")
 
         if color == "white":
             self.screen.blit(white_hex, position)
@@ -60,6 +68,42 @@ class HexGame(HexWorld):
         if color == "red":
             self.screen.blit(red_hex, position)
 
+    def place_piece(self, x: int, y: int, player: int):
+        self.hex_world.world[x][y] = player
+
 
 # Done! Time to quit.
 pygame.quit()
+
+
+class HexSprite(pygame.sprite.Sprite):
+    def __init__(self, color):
+        # Call the parent class (Sprite) constructor
+        pygame.sprite.Sprite.__init__(self)
+
+        # Create an image of the block, and fill it with a color.
+        # This could also be an image loaded from the disk.
+        if color == "red":
+            self.image = pygame.image.load('ui/hex_red_50x50.png')
+        if color == "blue":
+            self.image = pygame.image.load('ui/hex_blue_50x50.png')
+        if color == "white":
+            self.image = pygame.image.load('ui/hex-white.png')
+
+        # Fetch the rectangle object that has the dimensions of the image
+        # Update the position of this object by setting the values of rect.x and rect.y
+        self.rect = self.image.get_rect()
+
+
+def draw_ngon(Surface, color, n, radius, position):
+    pi2 = 2 * 3.14
+
+    for i in range(0, n):
+        pygame.draw.line(Surface, color, position,
+                         (cos(i / n * pi2) * radius + position[0], sin(i / n * pi2) * radius + position[1]))
+
+    return pygame.draw.lines(Surface,
+                             color,
+                             True,
+                             [(cos(i / n * pi2) * radius + position[0], sin(i / n * pi2) * radius + position[1]) for i
+                              in range(0, n)])
