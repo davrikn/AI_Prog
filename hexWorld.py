@@ -1,7 +1,6 @@
 from gameWorld import GameWorld, Piece
 
 
-
 class HexWorld(GameWorld):
     def check_win(self, player: int):
         # Check if the player has at least one piece on every layer from start to finish
