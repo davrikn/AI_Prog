@@ -10,7 +10,7 @@ class GameWorld:
         if size < 3 or size > 10:
             raise Exception("Gameworld size must be between 3 and 10")
         self.size = size
-        self.world = [[None for y in range(size)] for x in range(size)]
+        self.world: list[list[Piece]] = [[None for y in range(size)] for x in range(size)]
 
     def check_valid_point(self, point: tuple[int, int]):
         return self.size > point[0] >= 0 and self.size > point[1] >= 0

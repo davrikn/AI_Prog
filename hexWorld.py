@@ -11,8 +11,17 @@ class HexWorld(GameWorld):
                 pass
             else:
                 return False
-        nodes = list(filter(self.is_player_n(player), self.world[i] if player == 1 else [x[i] for x in self.world]))
-        frontier = list()
+        frontier = list(filter(self.is_player_n(player), self.world[0] if player == 1 else [x[0] for x in self.world]))
+        visited = list()
+
+        def is_in_visited(node: Piece):
+            for visit in visited:
+                if visit[0] == node.x and visit[1] == node.y:
+                    return True
+            return False
+
+        def is_not_in_visited(node: Piece):
+            return not is_in_visited(node)
 
         def is_in_frontier(node: Piece):
             for front in frontier:
@@ -20,11 +29,20 @@ class HexWorld(GameWorld):
                     return True
             return False
 
-        while (len(nodes) > 0):
-            node = nodes.pop()
-            frontier.append((node.x, node.y))
-            neighbors = list(filter(is_in_frontier, list(filter(self.is_player_n(player), self.neighbors_of_piece(node)))))
+        def is_not_in_frontier(node: Piece):
+            return not is_in_frontier(node)
 
-        # TODO complete search
+        while (len(frontier) > 0):
+            node = frontier.pop()
+            if player == 1:
+                if node
+                pass
+            else:
+                pass
+            visited.append((node.x, node.y))
+            neighbors = list(filter(is_not_in_frontier, list(filter(is_not_in_visited, list(filter(self.is_player_n(player), self.neighbors_of_piece(node)))))))
+            frontier.extend(neighbors)
+
+        return False
 
 
