@@ -31,13 +31,15 @@ class HexWorld(GameWorld):
         def is_not_in_frontier(node: Piece):
             return not is_in_frontier(node)
 
-        while (len(frontier) > 0):
+        while len(frontier) > 0:
             node = frontier.pop()
             if player == 1:
-                if node
-                pass
+                if node.y == self.size - 1:
+                    return True
             else:
-                pass
+                if node.x == self.size - 1:
+                    return True
+
             visited.append((node.x, node.y))
             neighbors = list(filter(is_not_in_frontier, list(filter(is_not_in_visited, list(filter(self.is_player_n(player), self.neighbors_of_piece(node)))))))
             frontier.extend(neighbors)

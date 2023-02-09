@@ -16,7 +16,7 @@ class GameWorld:
         return self.size > point[0] >= 0 and self.size > point[1] >= 0
 
     def neighbors_of(self, x: int, y: int):
-        neighbors: list[tuple[int, int]] = [(x, y-1), (x-1, y+1), (x-1, y), (x+1, y), (x-1, y+1), (x, y+1)]
+        neighbors: list[tuple[int, int]] = [(x, y-1), (x+1, y-1), (x-1, y), (x+1, y), (x-1, y+1), (x, y+1)]
         return list(filter(self.check_valid_point, neighbors))
 
     def neighbors_of_piece(self, p: Piece):
