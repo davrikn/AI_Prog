@@ -1,3 +1,7 @@
+from typing import TypeVar
+TGameWorld = TypeVar("GameWorld", bound="GameWorld")
+
+
 class Piece:
     def __init__(self, x: int, y:int, player: int):
         self.x = x
@@ -30,7 +34,22 @@ class GameWorld:
         piece = Piece(x, y, player)
         self.world[x][y] = piece
 
+    def get_children_states(self) -> list[TGameWorld]:
+        raise NotImplementedError("Get children states is not implemented")
+
     def is_player_n(self, player: int):
         def check(p: Piece):
             return p.player == player
         return check
+
+    def state_to_int_list(self) -> list[int]:
+        p1 = list(map(lambda x: 1 if x == 0 else 0, [j for sub in self.world for j in sub]))
+        p2 = list(map(lambda x: 1 if x == 1 else 0, [j for sub in self.world for j in sub]))
+        p1.extend(p2)
+        return p1
+
+
+    def clone(self):
+        cloned = GameWorld(self.size)
+        cloned.world = self.world.copy()
+        return cloned

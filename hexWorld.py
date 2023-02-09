@@ -2,13 +2,14 @@ from gameWorld import GameWorld, Piece
 
 
 class HexWorld(GameWorld):
+    def __init__(self, size: int):
+        super.__init__(size=size)
+
     def check_win(self, player: int):
         # Check if the player has at least one piece on every layer from start to finish
         for i in range(self.size):
             check_list = self.world[i] if player == 1 else [x[i] for x in self.world]
-            if len(list(filter(self.is_player_n(player), check_list))) > 0:
-                pass
-            else:
+            if len(list(filter(self.is_player_n(player), check_list))) == 0:
                 return False
         frontier = list(filter(self.is_player_n(player), self.world[0] if player == 1 else [x[0] for x in self.world]))
         visited = list()
