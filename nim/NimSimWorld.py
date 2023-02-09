@@ -3,7 +3,7 @@ import copy
 
 
 class NimSimWorld(Game):
-    def __init__(self, size: int = 3):
+    def __init__(self, size: int = 4):
         self.size = size
         self.board = self.__init_board()
 
@@ -22,7 +22,9 @@ class NimSimWorld(Game):
             board.append(i + 1)
         return board
 
-    def pick_object_from_pile(self, pile):
+    def pick_piece_from_pile(self, pile):
+        if self.board[pile] <= 0:
+            raise Exception("Error: Pile is already empty")
         self.board[pile] -= 1
 
     def __check_final_state(self):
@@ -34,7 +36,7 @@ class NimSimWorld(Game):
             temp_state = copy.deepcopy(self)
             for j in range(self.board[i]):
                 temp_state = copy.deepcopy(temp_state)
-                temp_state.pick_object_from_pile(i)
+                temp_state.pick_piece_from_pile(i)
                 child_states.append(temp_state)
 
         return child_states
