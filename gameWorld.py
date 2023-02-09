@@ -25,7 +25,7 @@ class GameWorld:
     def place_piece(self, x: int, y: int, player: int):
         if not self.check_valid_point((x, y)):
             raise Exception("Cannot place piece outside board range")
-        if self.world[x][y] is not None:
+        if self.world[x][y].player != -1:
             raise Exception("Cannot overwrite a populated location")
         piece = Piece(x, y, player)
         self.world[x][y] = piece
