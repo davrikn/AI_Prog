@@ -8,7 +8,7 @@ class NimSimWorld(Game):
         self.board = self.__init_board()
 
     def produce_initial_state(self):
-        return self.board
+        pass
 
     def get_children_states(self):
         return self.__generate_all_child_states()
