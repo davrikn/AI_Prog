@@ -46,12 +46,18 @@ class NimSimWorld(Game):
 
         return child_states
 
-    def __get_possible_actions(self):
+    def __get_possible_actions(self) -> list[str]:
         possible_actions: list[str] = []
+        action = [0 for i in range(self.size)]
         for i in range(self.size):
             for j in range(self.board[i]):
-                action = ""
-
+                if i > 0 and j == 0:
+                    continue
+                tmp_action = copy.deepcopy(action)
+                tmp_action[i] = j
+                possible_actions.append(''.join(map(str, tmp_action)))
+                # possible_actions.append(tmp_action)
+        return possible_actions
 
     def print_board(self):
         print(self.board)

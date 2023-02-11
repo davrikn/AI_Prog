@@ -11,7 +11,7 @@ class MonteCarloNode:
         self.parent = parent
         self.state = game
         self.number_of_visits = 0
-        self.edge_traversals = {[0, 0, 2, 0]}
+        self.edge_traversals = {}
 
 
 class MonteCarlo:
