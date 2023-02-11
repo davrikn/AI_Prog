@@ -1,12 +1,10 @@
-import numpy as np
-
-from nim.Game import Game
+from game import Game
 import copy
 
 
 class NimSimWorld(Game):
     def __init__(self, size: int = 4):
-        self.size = size
+        super(NimSimWorld, self).__init__(size)
         self.board = self.__init_board()
 
     def produce_initial_state(self):
