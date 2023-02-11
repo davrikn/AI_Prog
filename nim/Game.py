@@ -12,6 +12,10 @@ class Game:
         pass
 
     @abstractmethod
+    def get_possible_actions(self):
+        pass
+
+    @abstractmethod
     def is_final_state(self):
         pass
 

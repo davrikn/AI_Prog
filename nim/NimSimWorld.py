@@ -1,3 +1,5 @@
+import numpy as np
+
 from nim.Game import Game
 import copy
 
@@ -16,6 +18,9 @@ class NimSimWorld(Game):
     def is_final_state(self):
         return self.__check_final_state()
 
+    def get_possible_actions(self):
+        return self.__get_possible_actions()
+
     def __init_board(self):
         board = []
         for i in range(self.size):
@@ -27,7 +32,7 @@ class NimSimWorld(Game):
             raise Exception("Error: Pile is already empty")
         self.board[pile] -= 1
 
-    def __check_final_state(self):
+    def __check_final_state(self) -> bool:
         return all(pile == 0 for pile in self.board)
 
     def __generate_all_child_states(self):
@@ -40,6 +45,13 @@ class NimSimWorld(Game):
                 child_states.append(temp_state)
 
         return child_states
+
+    def __get_possible_actions(self):
+        possible_actions: list[str] = []
+        for i in range(self.size):
+            for j in range(self.board[i]):
+                action = ""
+
 
     def print_board(self):
         print(self.board)
