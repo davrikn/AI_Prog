@@ -1,9 +1,11 @@
+import configs
 from configs import size
 from typing import TypeVar
 from game import Game
 import numpy as np
 
 Node = TypeVar("Node", bound="MonteCarloNode")
+
 
 class BookKeeper:
     data = dict()
@@ -34,6 +36,7 @@ class BookKeeper:
         else:
             return self.data[state][action]
 
+
 class MonteCarloNode:
     def __init__(self, game: Game, parent: Node):
         self.parent = parent
@@ -43,7 +46,7 @@ class MonteCarloNode:
 class MonteCarlo:
     def __init__(self, initial_state=Game(size)):
         self.initial_state = MonteCarloNode(initial_state)
-        self.bookkeper = BookKeeper()
+        self.book_keeper = BookKeeper()
 
     def select_node_to_expand(self, leaf_nodes: list[MonteCarloNode]) -> MonteCarloNode:
         """Return a Node
@@ -56,16 +59,12 @@ class MonteCarlo:
             if self.calculate_ucb(node) > self.calculate_ucb(node_to_expand):
                 node_to_expand = node
 
-
-
     def calculate_ucb(self, state: str, action: str) -> int:
         c = 1
-        n_s = self.bookkeper.get_state(state)
-        n_s_a = self.bookkeper.get_state_action(state, action)
-        usa = c * np.sqrt(np.log(n_s)/(1 + n_s_a))
+        n_s = self.book_keeper.get_state(state)
+        n_s_a = self.book_keeper.get_state_action(state, action)
+        usa = c * np.sqrt(np.log(n_s) / (1 + n_s_a))
         return usa
-
-
 
     def get_action_from_actor(self, epsilon=0.05):
         # action = model.predict()

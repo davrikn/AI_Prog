@@ -27,9 +27,9 @@ def main():
     # ui = NimUI(game)
     # ui.start_game()
 
-    actions = game.get_possible_actions()
-    for action in actions:
-        print(action)
+    states = game.get_child_states_enumerated()
+    for state in states:
+        print(state)
 
 
 if __name__ == "__main__":

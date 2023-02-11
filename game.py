@@ -1,9 +1,12 @@
 from abc import abstractmethod
 
+import configs
+
 
 class Game:
-    def __init__(self, size: int):
+    def __init__(self, state=None, size: int = configs.size):
         self.size = size
+        self.state = state
 
     @abstractmethod
     def produce_initial_state(self):
@@ -23,4 +26,8 @@ class Game:
 
     @abstractmethod
     def enumerate_state(self) -> str:
+        pass
+
+    @abstractmethod
+    def get_child_states_enumerated(self) -> list[str]:
         pass
