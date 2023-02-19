@@ -2,6 +2,9 @@ from abc import abstractmethod
 
 import configs
 
+from typing import TypeVar
+
+Game = TypeVar("Game", bound="Game")
 
 class Game:
     def __init__(self, state=None, size: int = configs.size):
@@ -9,11 +12,11 @@ class Game:
         self.state = state
 
     @abstractmethod
-    def produce_initial_state(self):
+    def produce_initial_state(self) -> Game:
         pass
 
     @abstractmethod
-    def get_children_states(self):
+    def get_children_states(self) -> (str, Game):
         pass
 
     @abstractmethod
@@ -30,4 +33,8 @@ class Game:
 
     @abstractmethod
     def get_child_states_enumerated(self) -> list[str]:
+        pass
+
+    @abstractmethod
+    def get_state_utility(self) -> int:
         pass

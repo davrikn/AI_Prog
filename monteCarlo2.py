@@ -10,7 +10,7 @@ Node = TypeVar("Node", bound="MonteCarloNode")
 
 
 class MonteCarloNode:
-    def __init__(self, state: Game, parent: Node | None):
+    def __init__(self, state: Game, parent: Node or None):
         self.parent = parent
         self.children: list[MonteCarloNode] = []
         self.state = state
