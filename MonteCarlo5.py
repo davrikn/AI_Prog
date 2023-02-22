@@ -36,10 +36,11 @@ class MonteCarloNode:
         return self.visits > 0
 
     def value(self) -> float:
-        return self.total_score / self.visits
+        return self.total_score / self.visits + sqrt(log(self.parent.visits-1)/(1+self.visits))
 
     def __str__(self, level=0) -> str:
-        ret = "\t"*level, self.state.enumerate_state()
+        ret = "\t"*level + self.state.enumerate_state()
+        ret += " visits: " + str(self.visits) + " Q: " + str(self.total_score/self.visits) + "\n"
         for child in self.children:
             ret += child.__str__(level+1)
 
@@ -56,6 +57,7 @@ class MonteCarloNode:
         self.total_score += utility
         if self.parent is not None:
             self.parent.update_value(utility*decay_rate)
+
 
 
 class MonteCarlo:
