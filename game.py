@@ -16,7 +16,7 @@ class Game:
         pass
 
     @abstractmethod
-    def get_children_states(self) -> (str, Game):
+    def get_children_states(self) -> list[(str, Game)]:
         pass
 
     @abstractmethod

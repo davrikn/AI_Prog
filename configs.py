@@ -3,7 +3,7 @@ simulations = 100
 
 # MCTS parameters
 num_episodes = 100
-
+decay_rate = 0.75
 
 # ANET parameters
 input_variables = 100
