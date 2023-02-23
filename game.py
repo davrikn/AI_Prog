@@ -9,14 +9,14 @@ Game = TypeVar("Game", bound="Game")
 class Game:
     def __init__(self, state=None, size: int = configs.size):
         self.size = size
-        self.state = state
+        self.board = state
 
     @abstractmethod
     def produce_initial_state(self) -> Game:
         pass
 
     @abstractmethod
-    def get_children_states(self) -> (str, Game):
+    def get_children_states(self) -> list[(str, Game)]:
         pass
 
     @abstractmethod
