@@ -1,5 +1,5 @@
 import configs
-from MonteCarlo4 import MonteCarlo
+from MonteCarlo5 import MonteCarlo
 from gameWorld import GameWorld
 from hexWorld import HexWorld
 from ui.hexgame_ui import HexGame
@@ -21,11 +21,10 @@ def main():
     # states = game.get_child_states_enumerated()
     # for state in states:
     #     print(state)
-
+    game = NimSimWorld(size=configs.size, player=1)
     for i in range(configs.simulations):
-        game = NimSimWorld(size=configs.size)
-        mcts = MonteCarlo(game=game)
-        mcts.perform_sim()
+        print("Move counter: ", i)
+        game = MonteCarlo(root=game).run()
 
 
 

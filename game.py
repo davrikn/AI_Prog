@@ -6,10 +6,11 @@ from typing import TypeVar
 
 Game = TypeVar("Game", bound="Game")
 
+
 class Game:
-    def __init__(self, state=None, size: int = configs.size):
+    def __init__(self, player, size: int = configs.size):
         self.size = size
-        self.board = state
+        self.player = player
 
     @abstractmethod
     def produce_initial_state(self) -> Game:

@@ -8,8 +8,9 @@ NimSimWorld = TypeVar("NimSimWorld", bound="NimSimWorld")
 
 
 class NimSimWorld(Game):
-    def __init__(self, size):
-        super(NimSimWorld, self).__init__(size)
+    def __init__(self, player, size,):
+        super(NimSimWorld, self).__init__(player, size)
+        self.player = player
         self.size = configs.size
         self.__init_board()
 
@@ -32,13 +33,16 @@ class NimSimWorld(Game):
         return ''.join(map(str, self.board))
 
     def get_state_utility(self) -> int:
-        if self.is_final_state():
-            return 1
+        if self.__check_final_state():
+            if self.player == -1:
+                print("player 1 won")
+            else:
+                print("player 2 won")
+            return 1 if self.player == -1 else -1
         else:
             return 0
 
     def __init_board(self):
-        print(self.size)
         self.board = [(i + 1) for i in range(self.size)]
 
     def pick_piece_from_pile(self, pile):
@@ -47,13 +51,13 @@ class NimSimWorld(Game):
         self.board[pile] -= 1
 
     def __check_final_state(self) -> bool:
-        print("test", self.board)
         return all(pile == 0 for pile in self.board)
 
     def __generate_all_child_states(self) -> list[(str, NimSimWorld)]:
         child_states: list[(str, NimSimWorld)] = []
         for i in range(self.size):
             temp_state = copy.deepcopy(self)
+            temp_state.player = temp_state.player * -1
             for j in range(self.board[i]):
                 temp_state = copy.deepcopy(temp_state)
                 temp_state.pick_piece_from_pile(i)
