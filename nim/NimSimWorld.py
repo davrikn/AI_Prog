@@ -31,6 +31,9 @@ class NimSimWorld(Game):
     def enumerate_state(self) -> str:
         return ''.join(map(str, self.board))
 
+    def enumerate_state2(self) -> list[int]:
+        return self.board
+
     def get_state_utility(self) -> int:
         if self.__check_final_state():
             return 1
@@ -40,10 +43,12 @@ class NimSimWorld(Game):
     def __init_board(self):
         self.board = [(i + 1) for i in range(self.size)]
 
-    def pick_piece_from_pile(self, pile):
+    def pick_piece_from_pile(self, pile, sticks):
         if self.board[pile] <= 0:
             raise Exception("Error: Pile is already empty")
-        self.board[pile] -= 1
+        if self.board[pile] < sticks:
+            raise Exception("Too many removals")
+        self.board[pile] -= sticks
 
     def __check_final_state(self) -> bool:
         return all(pile == 0 for pile in self.board)
@@ -54,8 +59,8 @@ class NimSimWorld(Game):
             temp_state = copy.deepcopy(self)
             for j in range(self.board[i]):
                 temp_state = copy.deepcopy(temp_state)
-                temp_state.pick_piece_from_pile(i)
-                child_states.append((self.__get_action(i, j), temp_state))
+                temp_state.pick_piece_from_pile(i, 1)
+                child_states.append((self.__get_action(i, j+1), temp_state))
 
         return child_states
 

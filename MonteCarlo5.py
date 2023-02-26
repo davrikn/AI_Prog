@@ -56,9 +56,6 @@ class MonteCarloNode:
         if self.player == 1:
             self.children.sort(reverse=True, key=self.a_t_max)
             return self.children[0]
-            # for child in self.children:
-            #     if child.get_q_s_a() + child.get_u_s_a() > a_t.get_q_s_a() + a_t.get_u_s_a():
-            #         a_t = child
         if self.player == -1:
             self.children.sort(key=self.a_t_min)
             return self.children[0]
@@ -104,7 +101,8 @@ class MonteCarlo:
             if node.state.is_final_state():
                 continue
             node.expand()
-            node.update_value(self.rollout(node))
+            rollout_result = self.rollout(node)
+            node.update_value(rollout_result)
         return self.select_best_edge()
 
     def select_best_edge(self) -> MonteCarloNode:
@@ -113,7 +111,11 @@ class MonteCarlo:
 
     def rollout(self, node: MonteCarloNode):
         if node.state.is_final_state():
-            return node.state.get_state_utility() * node.player
+            # TODO: think this is not modular
+            if node.player == self.root.player:
+                return node.state.get_state_utility()
+            else:
+                return -node.state.get_state_utility()
         children = [MonteCarloNode(state=x[1], parent=node, action=x[0], player=node.player * -1)
                     for x in node.state.get_children_states()]
         return self.rollout(random.choice(children))

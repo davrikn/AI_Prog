@@ -33,6 +33,11 @@ class Game:
         pass
 
     @abstractmethod
+    def enumerate_state2(self) -> str:
+        pass
+
+
+    @abstractmethod
     def get_child_states_enumerated(self) -> list[str]:
         pass
 

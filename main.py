@@ -16,14 +16,20 @@ def main():
 
     # game = NimSimWorld()
 
-    # ui = NimUI(game)
-    # ui.start_game()
-
     # states = game.get_child_states_enumerated()
     # for state in states:
     #     print(state)
+
+    def run_with_ui():
+        game = NimSimWorld(size=configs.size)
+        ui = NimUI(game)
+        ui.start_game()
+
+    # run_with_ui()
+
+
     for i in range(configs.simulations):
-        print("Simulation counter:", i)
+        print("\nSimulation counter:", i + 1)
         game = NimSimWorld(size=configs.size)
         turns = 0
         player = 1
@@ -32,8 +38,9 @@ def main():
             turns += 1
             game = next_game_state.state
             player = next_game_state.player
+
             if next_game_state.state.is_final_state():
-                print("\nThe game ended after", turns, "turns")
+                print("The game ended after", turns, "turns")
                 if next_game_state.player == 1:
                     print("player 1 won")
                 else:

@@ -1,5 +1,7 @@
 import pygame
 import pygame.gfxdraw
+
+from MonteCarlo5 import MonteCarlo
 from nim.NimSimWorld import NimSimWorld
 from math import *
 
@@ -14,6 +16,8 @@ class NimUI(NimSimWorld):
         self.running = True
         self.game_over = False
 
+        self.player = 1
+
         pygame.init()
 
         # Game window
@@ -26,17 +30,13 @@ class NimUI(NimSimWorld):
         self.draw_board()
 
         while self.running:
+
             # Did the user click the window close button?
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_0:
-                        self.pick_piece_from_pile(0)
-                    if event.key == pygame.K_1:
-                        self.pick_piece_from_pile(1)
-                    if event.key == pygame.K_2:
-                        self.pick_piece_from_pile(2)
-                    if event.key == pygame.K_3:
-                        self.pick_piece_from_pile(3)
+                    if event.key == pygame.K_RETURN:
+                        self.do_move()
+
                 if event.type == pygame.QUIT:
                     self.running = False
                 else:
@@ -44,8 +44,11 @@ class NimUI(NimSimWorld):
                     pass
                 # Update display
                 self.draw_board()
-                if self.is_final_state():
-                    print("WInner winner chicken dinner")
+                if self.sim_world.is_final_state():
+                    if self.player == - 1:
+                        print("You lost")
+                    else:
+                        print("You won")
 
                 pygame.display.flip()
 
@@ -57,13 +60,33 @@ class NimUI(NimSimWorld):
         start_x = self.screen_width * 0.2
         start_y = self.screen_height * 0.2
         for i in range(self.size):
-            for j in range(self.board[i]):
+            for j in range(self.sim_world.board[i]):
                 rect = pygame.Rect(start_x + j * 20, start_y + i * 40, 5, 30)
                 pygame.draw.rect(self.screen, (0, 0, 0), rect, 3)
 
-    def get_input_from_user(self):
-        row_input = int(input("enter row number"))
-        if len(self.board) >= row_input >= 0:
-            self.pick_piece_from_pile(row_input)
+
+    def pick_from_pile(self):
+        pile = int(input("What pile?"))
+        sticks = int(input("How many sticks?"))
+
+        self.sim_world.pick_piece_from_pile(pile - 1, sticks)
+
+    def computer_move(self):
+        next_game_state = MonteCarlo(root=self.sim_world, player=-1).run()
+        self.sim_world.board = next_game_state.state.enumerate_state2()
+        self.draw_board()
+
+    def do_move(self):
+        if self.player == -1:
+            print("computer move..")
+            print("curr state: ", self.sim_world.board)
+            self.computer_move()
+            print("next state: ", self.sim_world.board)
+            self.player = 1
+        else:
+            self.pick_from_pile()
+            self.player = -1
+
+
 # Done! Time to quit.
 pygame.quit()
