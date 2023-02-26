@@ -19,7 +19,7 @@ class MonteCarloNode:
     total_score = 0
     children = []
 
-    def __init__(self, state: Game, action: str, parent: Node or None, player=1):
+    def __init__(self, state: Game, action: str, parent: Node or None, player: int):
         self.state = state
         self.parent = parent
         if self.parent is not None:
@@ -29,6 +29,8 @@ class MonteCarloNode:
 
     def expand(self) -> None:
         children = self.state.get_children_states()
+        if len(children) == 0:
+            raise Exception("Trying to expand final state")
         self.children = [MonteCarloNode(state=x[1], action=x[0], parent=self, player=self.player * -1) for x in
                          children]
 
@@ -50,7 +52,6 @@ class MonteCarloNode:
         self.children.sort(reverse=True)
         return self.children[0]
 
-    ## Fix random bug
     def select_best_child2(self) -> Node:
         if self.player == 1:
             self.children.sort(reverse=True, key=self.a_t_max)
@@ -59,18 +60,14 @@ class MonteCarloNode:
             #     if child.get_q_s_a() + child.get_u_s_a() > a_t.get_q_s_a() + a_t.get_u_s_a():
             #         a_t = child
         if self.player == -1:
-            print(self.children)
             self.children.sort(key=self.a_t_min)
             return self.children[0]
-            # for child in self.children:
-            #     if child.get_q_s_a() - child.get_u_s_a() < a_t.get_q_s_a() - a_t.get_u_s_a():
-            #         a_t = child
 
     def a_t_max(self, node):
         return node.get_q_s_a() + node.get_u_s_a()
 
     def a_t_min(self, node):
-        return self.get_q_s_a() - self.get_u_s_a()
+        return node.get_q_s_a() - node.get_u_s_a()
 
     def get_q_s_a(self):
         if self.visits == 0:
@@ -87,32 +84,36 @@ class MonteCarloNode:
         self.visits += 1
         self.total_score += utility
         if self.parent is not None:
-            self.parent.update_value(utility * decay_rate)
+            # self.parent.update_value(utility * decay_rate)  #TODO: Discuss decay rate
+            self.parent.update_value(utility)
 
 
 class MonteCarlo:
 
-    def __init__(self, root=Game):
-        self.root = MonteCarloNode(state=root, action="", parent=None)
+    def __init__(self, root=Game, player=1):
+        self.root = MonteCarloNode(state=root, action="", parent=None, player=player)
 
-    def run(self) -> Game:
+    def run(self) -> MonteCarloNode:
         for i in range(num_episodes):
             node = self.root
 
             while node.expanded():
-                node = node.select_best_child()
+                # node = node.select_best_child()
+                node = node.select_best_child2()
 
+            if node.state.is_final_state():
+                continue
             node.expand()
             node.update_value(self.rollout(node))
         return self.select_best_edge()
 
-    def select_best_edge(self) -> Game:
+    def select_best_edge(self) -> MonteCarloNode:
         self.root.children.sort(reverse=True, key=lambda child: child.visits)
-        return self.root.children[0].state
+        return self.root.children[0]
 
     def rollout(self, node: MonteCarloNode):
         if node.state.is_final_state():
-            return node.state.get_state_utility()
+            return node.state.get_state_utility() * node.player
         children = [MonteCarloNode(state=x[1], parent=node, action=x[0], player=node.player * -1)
                     for x in node.state.get_children_states()]
         return self.rollout(random.choice(children))
