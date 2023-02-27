@@ -1,4 +1,4 @@
-size = 4
+size = 7
 simulations = 100
 
 # MCTS parameters

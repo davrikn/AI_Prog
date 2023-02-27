@@ -10,7 +10,7 @@ class NimUI(NimSimWorld):
     def __init__(self, sim_world: NimSimWorld):
         super().__init__(sim_world.size)
         self.screen_width = 300
-        self.screen_height = 300
+        self.screen_height = 400
 
         self.sim_world = sim_world
         self.running = True
@@ -45,7 +45,7 @@ class NimUI(NimSimWorld):
                 # Update display
                 self.draw_board()
                 if self.sim_world.is_final_state():
-                    if self.player == - 1:
+                    if self.player == 1:
                         print("You lost")
                     else:
                         print("You won")
@@ -72,7 +72,7 @@ class NimUI(NimSimWorld):
         self.sim_world.pick_piece_from_pile(pile - 1, sticks)
 
     def computer_move(self):
-        next_game_state = MonteCarlo(root=self.sim_world, player=-1).run()
+        next_game_state = MonteCarlo(root=self.sim_world, player=1).run()
         self.sim_world.board = next_game_state.state.enumerate_state2()
         self.draw_board()
 

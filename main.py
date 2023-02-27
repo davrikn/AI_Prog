@@ -25,7 +25,7 @@ def main():
         ui = NimUI(game)
         ui.start_game()
 
-    # run_with_ui()
+    run_with_ui()
 
 
     for i in range(configs.simulations):
@@ -35,6 +35,7 @@ def main():
         player = 1
         while True:
             next_game_state = MonteCarlo(root=game, player=player).run()
+            print("visited count: ", next_game_state.visits)
             turns += 1
             game = next_game_state.state
             player = next_game_state.player

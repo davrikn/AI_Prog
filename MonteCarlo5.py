@@ -30,7 +30,7 @@ class MonteCarloNode:
     def expand(self) -> None:
         children = self.state.get_children_states()
         if len(children) == 0:
-            raise Exception("Trying to expand final state")
+            raise Exception("Trying to expand terminal state")
         self.children = [MonteCarloNode(state=x[1], action=x[0], parent=self, player=self.player * -1) for x in
                          children]
 
@@ -81,7 +81,7 @@ class MonteCarloNode:
         self.visits += 1
         self.total_score += utility
         if self.parent is not None:
-            # self.parent.update_value(utility * decay_rate)  #TODO: Discuss decay rate
+            # self.parent.update_value(utility * decay_rate)  # TODO: Discuss decay rate
             self.parent.update_value(utility)
 
 
@@ -95,11 +95,12 @@ class MonteCarlo:
             node = self.root
 
             while node.expanded():
-                # node = node.select_best_child()
                 node = node.select_best_child2()
 
             if node.state.is_final_state():
-                continue
+                print("entire tree expanded..")
+                break
+
             node.expand()
             rollout_result = self.rollout(node)
             node.update_value(rollout_result)
@@ -107,15 +108,21 @@ class MonteCarlo:
 
     def select_best_edge(self) -> MonteCarloNode:
         self.root.children.sort(reverse=True, key=lambda child: child.visits)
+        print("total children visits: ", self.get_total_children_visits())
         return self.root.children[0]
+
+    # TODO: Delete this (debugging method)
+    def get_total_children_visits(self):
+        tot = 0
+        for child in self.root.children:
+            tot += child.visits
+        return tot
 
     def rollout(self, node: MonteCarloNode):
         if node.state.is_final_state():
-            # TODO: think this is not modular
-            if node.player == self.root.player:
-                return node.state.get_state_utility()
-            else:
-                return -node.state.get_state_utility()
+            # returns negative score for second player since player 2 is <-1>
+            return node.state.get_state_utility() * node.player
+
         children = [MonteCarloNode(state=x[1], parent=node, action=x[0], player=node.player * -1)
                     for x in node.state.get_children_states()]
         return self.rollout(random.choice(children))
