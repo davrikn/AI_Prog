@@ -1,5 +1,7 @@
+import csv
 import random
 from functools import reduce, cmp_to_key
+from os.path import exists
 
 import numpy as np
 
@@ -49,13 +51,9 @@ class MonteCarloNode:
 
     def select_next_child(self) -> Node:
         if self.player == 1:
-            # return sorted(self.children, reverse=True, key=self.a_t_max)[0]
-
             return sorted(self.children, reverse=True,
                           key=cmp_to_key(lambda node1, node2: node1.a_t_max() - node2.a_t_max()))[0]
         if self.player == -1:
-            # return sorted(self.children, key=self.a_t_min, reverse=True)[0]
-
             return sorted(self.children,
                           key=cmp_to_key(lambda node1, node2: node1.a_t_min() - node2.a_t_min()))[0]
 
@@ -108,9 +106,12 @@ class MonteCarlo:
 
             # Backpropagation - Passing the utility of the final state back up the tree
             self.backpropagation(leaf_node, utility)
-        return self.select_best_edge()
 
-    def select_best_edge(self) -> MonteCarloNode:
+        self.create_train_data()
+
+        return self.get_most_visited_edge()
+
+    def get_most_visited_edge(self) -> MonteCarloNode:
         print("total children visits: ", self.get_total_children_visits())
         return sorted(self.root.children, reverse=True, key=lambda child: child.visits)[0]
 
@@ -148,3 +149,38 @@ class MonteCarlo:
 
         if node.parent is not None:
             self.backpropagation(node.parent, value)
+
+    def get_action_distribution(self, node: MonteCarloNode):
+        dists = [x.visits for x in node.children]
+        normalized_dists = dists / np.sum(dists)
+        if np.isnan(normalized_dists).any():
+            return None
+        return normalized_dists
+
+    def create_train_data(self):
+        dists = self.get_action_distribution(self.root)
+        if dists is None:
+            return
+
+        if not exists('train.csv'):
+            with open('train.csv', 'w', newline='') as f:
+                writer = csv.writer(f)
+
+                fields = ["state", "player", "mcts_distribution"]
+                writer.writerow(fields)
+
+                f.close()
+
+        with open('train.csv', 'a', newline='') as f:
+            writer = csv.writer(f)
+
+            state = self.root.state.enumerate_state()
+            player = self.root.player
+            dists = self.get_action_distribution(self.root)
+
+            writer.writerow([state, player, dists])
+
+        f.close()
+
+
+
