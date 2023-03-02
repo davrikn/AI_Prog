@@ -16,6 +16,8 @@ class NimUI(NimSimWorld):
         self.running = True
         self.game_over = False
 
+        self.curr_player = 1
+        self.computer = -1
         self.player = 1
 
         pygame.init()
@@ -45,7 +47,7 @@ class NimUI(NimSimWorld):
                 # Update display
                 self.draw_board()
                 if self.sim_world.is_final_state():
-                    if self.player == 1:
+                    if self.curr_player == self.computer:
                         print("You lost")
                     else:
                         print("You won")
@@ -64,7 +66,6 @@ class NimUI(NimSimWorld):
                 rect = pygame.Rect(start_x + j * 20, start_y + i * 40, 5, 30)
                 pygame.draw.rect(self.screen, (0, 0, 0), rect, 3)
 
-
     def pick_from_pile(self):
         pile = int(input("What pile?"))
         sticks = int(input("How many sticks?"))
@@ -72,20 +73,20 @@ class NimUI(NimSimWorld):
         self.sim_world.pick_piece_from_pile(pile - 1, sticks)
 
     def computer_move(self):
-        next_game_state = MonteCarlo(root=self.sim_world, player=1).run()
+        next_game_state = MonteCarlo(root=self.sim_world, player=self.computer).run()
         self.sim_world.board = next_game_state.state.enumerate_state2()
         self.draw_board()
 
     def do_move(self):
-        if self.player == -1:
+        if self.curr_player == self.computer:
             print("computer move..")
             print("curr state: ", self.sim_world.board)
             self.computer_move()
             print("next state: ", self.sim_world.board)
-            self.player = 1
+            self.curr_player = self.player
         else:
             self.pick_from_pile()
-            self.player = -1
+            self.curr_player = self.computer
 
 
 # Done! Time to quit.

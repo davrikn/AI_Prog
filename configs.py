@@ -1,8 +1,8 @@
-size = 7
-simulations = 100
+size = 5
+simulations = 200
 
 # MCTS parameters
-num_episodes = 1000
+num_episodes = 100
 decay_rate = 0.75
 
 # ANET parameters

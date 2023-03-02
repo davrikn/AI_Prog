@@ -25,20 +25,21 @@ def main():
         ui = NimUI(game)
         ui.start_game()
 
-    run_with_ui()
+    # run_with_ui()
 
 
     for i in range(configs.simulations):
         print("\nSimulation counter:", i + 1)
         game = NimSimWorld(size=configs.size)
         turns = 0
-        player = 1
+        curr_player = -1
         while True:
-            next_game_state = MonteCarlo(root=game, player=player).run()
-            print("visited count: ", next_game_state.visits)
+            print("\nplayers turn: ", curr_player)
+            next_game_state = MonteCarlo(root=game, player=curr_player).run()
+            print("visited count of best edge: ", next_game_state.visits)
             turns += 1
             game = next_game_state.state
-            player = next_game_state.player
+            curr_player = next_game_state.player
 
             if next_game_state.state.is_final_state():
                 print("The game ended after", turns, "turns")

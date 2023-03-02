@@ -1,5 +1,5 @@
 import random
-from functools import reduce
+from functools import reduce, cmp_to_key
 
 import numpy as np
 
@@ -34,7 +34,7 @@ class MonteCarloNode:
         self.children = [MonteCarloNode(state=x[1], action=x[0], parent=self, player=self.player * -1) for x in
                          children]
 
-    def expanded(self) -> bool:
+    def is_expanded(self) -> bool:
         return self.visits > 0
 
     def value(self) -> float:
@@ -47,24 +47,25 @@ class MonteCarloNode:
         for child in self.children:
             ret += child.__str__(level + 1)
 
-    def select_best_child(self) -> Node:
-        ## TODO create func that uses at = Q(s,a) + N(s,a) and update key
-        self.children.sort(reverse=True)
-        return self.children[0]
-
-    def select_best_child2(self) -> Node:
+    def select_next_child(self) -> Node:
         if self.player == 1:
-            self.children.sort(reverse=True, key=self.a_t_max)
-            return self.children[0]
+            # return sorted(self.children, reverse=True, key=self.a_t_max)[0]
+
+            return sorted(self.children, reverse=True,
+                          key=cmp_to_key(lambda node1, node2: node1.a_t_max() - node2.a_t_max()))[0]
         if self.player == -1:
-            self.children.sort(key=self.a_t_min)
-            return self.children[0]
+            # return sorted(self.children, key=self.a_t_min, reverse=True)[0]
 
-    def a_t_max(self, node):
-        return node.get_q_s_a() + node.get_u_s_a()
+            return sorted(self.children, reverse=True,
+                          key=cmp_to_key(lambda node1, node2: node1.a_t_min() - node2.a_t_min()))[0]
 
-    def a_t_min(self, node):
-        return node.get_q_s_a() - node.get_u_s_a()
+    def a_t_max(self):
+        # return node.get_q_s_a() + node.get_u_s_a()
+        return self.get_q_s_a() + self.get_u_s_a()
+
+    def a_t_min(self):
+        # return node.get_q_s_a() - node.get_u_s_a()
+        return self.get_q_s_a() - self.get_u_s_a()
 
     def get_q_s_a(self):
         if self.visits == 0:
@@ -77,39 +78,41 @@ class MonteCarloNode:
     def __lt__(self, other: Node):
         return self.value() < other.value()
 
-    def update_value(self, utility: float):
-        self.visits += 1
-        self.total_score += utility
-        if self.parent is not None:
-            # self.parent.update_value(utility * decay_rate)  # TODO: Discuss decay rate
-            self.parent.update_value(utility)
+    # def update_value(self, utility: float):
+    #     self.visits += 1
+    #     self.total_score += utility
+    #     if self.parent is not None:
+    #         # self.parent.update_value(utility * decay_rate)  # TODO: Discuss decay rate
+    #         self.parent.update_value(utility)
 
 
 class MonteCarlo:
 
-    def __init__(self, root=Game, player=1):
+    def __init__(self, player, root=Game):
         self.root = MonteCarloNode(state=root, action="", parent=None, player=player)
 
     def run(self) -> MonteCarloNode:
         for i in range(num_episodes):
-            node = self.root
+            # Tree Search using Tree Policy
+            leaf_node = self.tree_search()
 
-            while node.expanded():
-                node = node.select_best_child2()
-
-            if node.state.is_final_state():
-                print("entire tree expanded..")
+            # Stop the loop if the entire state-tree is generated
+            if leaf_node.state.is_final_state():
                 break
 
-            node.expand()
-            rollout_result = self.rollout(node)
-            node.update_value(rollout_result)
+            # Expand the leaf node
+            leaf_node.expand()
+
+            # Leaf evaluation using rollout simulation
+            utility = self.rollout(leaf_node)
+
+            # Backpropagation - Passing the utility of the final state back up the tree
+            self.backpropagation(leaf_node, utility)
         return self.select_best_edge()
 
     def select_best_edge(self) -> MonteCarloNode:
-        self.root.children.sort(reverse=True, key=lambda child: child.visits)
         print("total children visits: ", self.get_total_children_visits())
-        return self.root.children[0]
+        return sorted(self.root.children, reverse=True, key=lambda child: child.visits)[0]
 
     # TODO: Delete this (debugging method)
     def get_total_children_visits(self):
@@ -117,6 +120,18 @@ class MonteCarlo:
         for child in self.root.children:
             tot += child.visits
         return tot
+
+    def tree_search(self):
+        """
+        Uses the tree-policy to traverse the tree until a leaf node is found
+        :return: Leaf node
+        """
+
+        node = self.root
+
+        while node.is_expanded():
+            node = node.select_next_child()
+        return node
 
     def rollout(self, node: MonteCarloNode):
         if node.state.is_final_state():
@@ -126,3 +141,10 @@ class MonteCarlo:
         children = [MonteCarloNode(state=x[1], parent=node, action=x[0], player=node.player * -1)
                     for x in node.state.get_children_states()]
         return self.rollout(random.choice(children))
+
+    def backpropagation(self, node: MonteCarloNode, value: int):
+        node.visits += 1
+        node.total_score += value
+
+        if node.parent is not None:
+            self.backpropagation(node.parent, value)
