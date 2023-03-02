@@ -150,6 +150,7 @@ class MonteCarlo:
         if node.parent is not None:
             self.backpropagation(node.parent, value)
 
+    # TODO: Make function return distribution over ALL moves (legal + illegal)
     def get_action_distribution(self, node: MonteCarloNode):
         dists = [x.visits for x in node.children]
         normalized_dists = dists / np.sum(dists)
