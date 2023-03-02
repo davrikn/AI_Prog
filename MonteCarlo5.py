@@ -174,7 +174,7 @@ class MonteCarlo:
         with open('train.csv', 'a', newline='') as f:
             writer = csv.writer(f)
 
-            state = self.root.state.enumerate_state()
+            state = self.root.state.enumerate_state2()
             player = self.root.player
             dists = self.get_action_distribution(self.root)
 
