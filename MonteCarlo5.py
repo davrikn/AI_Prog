@@ -150,13 +150,15 @@ class MonteCarlo:
         if node.parent is not None:
             self.backpropagation(node.parent, value)
 
-    # TODO: Make function return distribution over ALL moves (legal + illegal)
     def get_action_distribution(self, node: MonteCarloNode):
-        dists = [x.visits for x in node.children]
-        normalized_dists = dists / np.sum(dists)
-        if np.isnan(normalized_dists).any():
+        visits = [x.visits for x in node.children]
+        if 0 in visits:
             return None
-        return normalized_dists
+
+        visit_sum = np.sum(visits)
+        dists = [(x.action, x.visits / visit_sum) for x in node.children]
+
+        return dists
 
     def create_train_data(self):
         dists = self.get_action_distribution(self.root)
@@ -178,10 +180,8 @@ class MonteCarlo:
             state = self.root.state.enumerate_state2()
             player = self.root.player
             dists = self.get_action_distribution(self.root)
+            print(dists)
 
             writer.writerow([state, player, dists])
 
         f.close()
-
-
-

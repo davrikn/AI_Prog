@@ -1,5 +1,5 @@
-size = 5
-simulations = 100
+size = 4
+simulations = 50
 
 # MCTS parameters
 num_episodes = 200
