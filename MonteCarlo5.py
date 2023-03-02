@@ -56,24 +56,24 @@ class MonteCarloNode:
         if self.player == -1:
             # return sorted(self.children, key=self.a_t_min, reverse=True)[0]
 
-            return sorted(self.children, reverse=True,
+            return sorted(self.children,
                           key=cmp_to_key(lambda node1, node2: node1.a_t_min() - node2.a_t_min()))[0]
 
     def a_t_max(self):
-        # return node.get_q_s_a() + node.get_u_s_a()
         return self.get_q_s_a() + self.get_u_s_a()
 
     def a_t_min(self):
-        # return node.get_q_s_a() - node.get_u_s_a()
         return self.get_q_s_a() - self.get_u_s_a()
 
     def get_q_s_a(self):
         if self.visits == 0:
-            return np.inf
+            return 0
         return self.total_score / self.visits
 
     def get_u_s_a(self):
-        return sqrt(log(self.parent.visits) / (1 + self.visits))
+        if self.visits == 0:
+            return np.inf
+        return sqrt(log(self.parent.visits) / self.visits)
 
     def __lt__(self, other: Node):
         return self.value() < other.value()

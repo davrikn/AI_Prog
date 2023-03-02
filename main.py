@@ -32,7 +32,7 @@ def main():
         print("\nSimulation counter:", i + 1)
         game = NimSimWorld(size=configs.size)
         turns = 0
-        curr_player = -1
+        curr_player = 1
         while True:
             print("\nplayers turn: ", curr_player)
             next_game_state = MonteCarlo(root=game, player=curr_player).run()
