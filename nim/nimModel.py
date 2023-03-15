@@ -49,7 +49,7 @@ class NimModel(nn.Module):
         return x.argmax(1)
 
     def load_train_data(self):
-        file = reader(open('train.csv'))
+        file = reader(open('../train.csv'))
         first = True
         data = []
         for line in file:

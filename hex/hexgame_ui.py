@@ -1,6 +1,6 @@
 import pygame
 import pygame.gfxdraw
-from hexWorld import HexWorld
+from hex.hexWorld import HexWorld
 from math import *
 
 

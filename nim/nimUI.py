@@ -1,7 +1,7 @@
 import pygame
 import pygame.gfxdraw
 
-from MonteCarlo5 import MonteCarlo
+from monteCarlo import MonteCarlo
 from nim.NimSimWorld import NimSimWorld
 from math import *
 
