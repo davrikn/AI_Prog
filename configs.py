@@ -1,3 +1,6 @@
+# Generic configs
+game = 'nim'
+ui = False
 size = 4
 simulations = 50
 

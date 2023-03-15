@@ -4,7 +4,7 @@ from hex.hexWorld import HexWorld
 from math import *
 
 
-class HexGame(HexWorld):
+class HexUI(HexWorld):
     def __init__(self, hex_world: HexWorld):
         super().__init__(hex_world.size)
         screen_width = 750

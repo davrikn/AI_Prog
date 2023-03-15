@@ -1,20 +1,27 @@
 import configs
-from nim.NimSimWorld import NimSimWorld
+from nim.NimWorld import NimSimWorld
 from nim.nimUI import NimUI
+from hex.hexWorld import HexWorld
+from hex.hexUI import HexUI
 from monteCarlo import MonteCarlo
-
+from gameWorld import GameWorld
+from typing import Callable
 
 def main():
-
-
-    def run_with_ui():
-        game = NimSimWorld(size=configs.size)
-        ui = NimUI(game)
-        ui.start_game()
+    get_game: Callable[[], GameWorld] = lambda : None
+    get_ui: Callable[[], HexUI or NimUI] = lambda : None
+    if configs.game == 'hex':
+        get_game = lambda : HexWorld(size=configs.size)
+        ui = HexUI(get_game())
+    elif configs.game == 'nim':
+        get_game = lambda : NimSimWorld(size=configs.size)
+        ui = NimUI(get_game())
+    else:
+        raise Exception(f"Game {configs.game} is not supported")
 
     for i in range(configs.simulations):
         print("\nSimulation counter:", i + 1)
-        game = NimSimWorld(size=configs.size)
+        game = get_game()
         turns = 0
         curr_player = 1
         while True:

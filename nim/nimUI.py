@@ -2,7 +2,7 @@ import pygame
 import pygame.gfxdraw
 
 from monteCarlo import MonteCarlo
-from nim.NimSimWorld import NimSimWorld
+from nim.NimWorld import NimSimWorld
 from math import *
 
 
