@@ -1,11 +1,11 @@
 import re
 from ast import literal_eval
 import numpy as np
+from torch import nn, tensor, optim, load
 import torch
-from torch import nn, tensor, optim
-
 from csv import reader
 from functools import reduce
+from os.path import isfile
 
 class NimModel(nn.Module):
     def __init__(self, gamesize: int):
@@ -21,6 +21,9 @@ class NimModel(nn.Module):
         self.rl2 = nn.ReLU()
         self.sm = nn.Softmax(0)
         self.action_to_index = self.gen_action_index_dict()
+
+        if isfile('../model_dicts/nim.pth'):
+            self.load_state_dict(load('../model_dicts/nim.pth'))
 
     def gen_action_index_dict(self):
         action_to_index = dict()
@@ -40,13 +43,13 @@ class NimModel(nn.Module):
         x = self.rl2(x)
         x = self.l3(x)
         x = self.rl2(x)
-        x = self.sm(x)
         return x
 
     def classify(self, x: np.ndarray):
+        x = tensor(x, dtype=torch.float)
         x = self(x)
-        x = nn.Softmax(dim=1)(x)
-        return x.argmax(1)
+        x = nn.Softmax(dim=0)(x)
+        return {v: k for k, v in self.action_to_index.items()}[x.argmax().item()]
 
     def load_train_data(self):
         file = reader(open('../train.csv'))
@@ -71,7 +74,7 @@ class NimModel(nn.Module):
 if __name__ == "__main__":
     model = NimModel(4)
     data = model.load_train_data()
-    crit = nn.NLLLoss() ## TODO fix loss function, NLLLoss throws runtime error, but MSE is trash for softmax
+    crit = nn.CrossEntropyLoss() ## TODO fix loss function, NLLLoss throws runtime error, but MSE is trash for softmax
     optimizer = optim.SGD(model.parameters(), lr=0.01)
     g = model(tensor(data[0][0], dtype=torch.float))
     losses = []
@@ -88,9 +91,5 @@ if __name__ == "__main__":
         losses.append(loss.item())
         loss.backward()
         optimizer.step()
-    print(losses)
-
     out = model(tensor(data[0][0], dtype=torch.float))
-    print(g)
-    print(out)
-    print(data[0][1])
+    torch.save(model.state_dict(), '../model_dicts/nim_v1.pth')

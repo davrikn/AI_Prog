@@ -1,7 +1,10 @@
-import numpy as np
-from torch import nn
+import os.path
 
-class HexNet(nn.Module):
+import numpy as np
+from torch import nn, load
+from os.path import isfile
+
+class HexModel(nn.Module):
     def __init__(self, boardsize: int):
         super().__init__()
         self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
@@ -12,6 +15,9 @@ class HexNet(nn.Module):
         self.lin2 = nn.Linear(256, 128)
         self.lin3 = nn.Linear(1, boardsize*boardsize + 1)
         self.sm = nn.Softmax(boardsize * boardsize + 1)
+
+        if isfile('../model_dicts/hex.pth'):
+            self.load_state_dict(load('../model_dicts/hex.pth'))
 
 
     def forward(self, x: np.ndarray) -> np.ndarray:
@@ -25,5 +31,5 @@ class HexNet(nn.Module):
         x = self.sm(x)
         return x
 
-    def clasify(self, x) -> int:
+    def classify(self, x) -> int:
         return np.argmax(self.forward(x), 0)

@@ -3,14 +3,16 @@ from typing import TypeVar
 import configs
 from game import Game
 import copy
+import numpy as np
 
 NimSimWorld = TypeVar("NimSimWorld", bound="NimSimWorld")
 
 
 class NimSimWorld(Game):
-    def __init__(self, size,):
+    def __init__(self, size, player: int = 1):
         super(NimSimWorld, self).__init__(size)
         self.size = configs.size
+        self.player = player
         self.__init_board()
 
     def produce_initial_state(self):
@@ -40,6 +42,10 @@ class NimSimWorld(Game):
         else:
             return 0
 
+    def state_to_array(self) -> np.ndarray:
+        print(self.player)
+        return np.concatenate((self.board, [self.player]))
+
     def __init_board(self):
         self.board = [(i + 1) for i in range(self.size)]
 
@@ -60,9 +66,20 @@ class NimSimWorld(Game):
             for j in range(self.board[i]):
                 temp_state = copy.deepcopy(temp_state)
                 temp_state.pick_piece_from_pile(i, 1)
+                temp_state.player *= -1
                 child_states.append((self.__get_action(i, j+1), temp_state))
 
         return child_states
+
+    def apply(self, action: str) -> Game:
+        if len(action) != self.size:
+            raise Exception(f"Action {action} is not allowed with gamesize {self.size}")
+        for i in range(len(action)):
+            if action[i] == '0':
+                continue
+            temp_state = copy.deepcopy(self)
+            temp_state.pick_piece_from_pile(i, int(action[i]))
+            return temp_state
 
     def __get_action(self, i, j) -> str:
         action = [0 for i in range(self.size)]
@@ -88,6 +105,7 @@ class NimSimWorld(Game):
         for i in range(self.size):
             for j in range(self.board[i]):
                 tmp_state = copy.deepcopy(state)
+                tmp_state.player *= -1
                 tmp_state[i] -= j + 1
                 possible_child_states.append(''.join(map(str, tmp_state)))
         return possible_child_states

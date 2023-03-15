@@ -1,5 +1,7 @@
 from abc import abstractmethod
 
+import numpy as np
+
 import configs
 
 from typing import TypeVar
@@ -14,6 +16,10 @@ class Game:
 
     @abstractmethod
     def produce_initial_state(self) -> Game:
+        pass
+
+    @abstractmethod
+    def apply(self, action: str) -> Game:
         pass
 
     @abstractmethod
@@ -36,6 +42,9 @@ class Game:
     def enumerate_state2(self) -> str:
         pass
 
+    @abstractmethod
+    def state_to_array(self) -> np.ndarray:
+        pass
 
     @abstractmethod
     def get_child_states_enumerated(self) -> list[str]:

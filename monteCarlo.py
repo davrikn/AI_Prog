@@ -9,6 +9,7 @@ from game import Game
 from typing import TypeVar, Callable
 from math import log, sqrt
 from configs import input_variables, num_episodes, decay_rate
+from model import Model
 from torch import nn
 import torch
 
@@ -86,7 +87,8 @@ class MonteCarloNode:
 
 class MonteCarlo:
 
-    def __init__(self, player, root=Game):
+    def __init__(self, player, root=Game, model: Model = None):
+        self.model = model
         self.root = MonteCarloNode(state=root, action="", parent=None, player=player)
 
     def run(self) -> MonteCarloNode:
@@ -139,9 +141,13 @@ class MonteCarlo:
             # returns negative score for second player since player 2 is <-1>
             return node.state.get_state_utility() * node.player
 
-        children = [MonteCarloNode(state=x[1], parent=node, action=x[0], player=node.player * -1)
-                    for x in node.state.get_children_states()]
-        return self.rollout(random.choice(children))
+        if self.model is None:
+            children = [MonteCarloNode(state=x[1], parent=node, action=x[0], player=node.player * -1)
+                        for x in node.state.get_children_states()]
+            return self.rollout(random.choice(children))
+        else:
+            action = self.model.classify(node.state.state_to_array())
+            self.rollout(MonteCarloNode(state=node.state.apply(action), parent=node, action=action, player=node.player * -1))
 
     def backpropagation(self, node: MonteCarloNode, value: int):
         node.visits += 1
