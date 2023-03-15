@@ -43,7 +43,6 @@ class NimSimWorld(Game):
             return 0
 
     def state_to_array(self) -> np.ndarray:
-        print(self.player)
         return np.concatenate((self.board, [self.player]))
 
     def __init_board(self):

@@ -146,8 +146,13 @@ class MonteCarlo:
                         for x in node.state.get_children_states()]
             return self.rollout(random.choice(children))
         else:
-            action = self.model.classify(node.state.state_to_array())
-            self.rollout(MonteCarloNode(state=node.state.apply(action), parent=node, action=action, player=node.player * -1))
+            actions = self.model.classify(node.state.state_to_array())
+            for action in actions:
+                try:
+                    childnode = node.state.apply(action)
+                    return self.rollout(MonteCarloNode(state=childnode, parent=node, action=action, player=node.player * -1))
+                except:
+                    pass
 
     def backpropagation(self, node: MonteCarloNode, value: int):
         node.visits += 1
@@ -186,7 +191,7 @@ class MonteCarlo:
             state = self.root.state.enumerate_state2()
             player = self.root.player
             dists = self.get_action_distribution(self.root)
-            print(dists)
+            print("Monte carlo distribution:",dists)
 
             writer.writerow([state, player, dists])
 

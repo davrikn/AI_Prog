@@ -8,5 +8,5 @@ class Model(nn.Module):
         pass
 
     @abstractmethod
-    def classify(self, x: np.ndarray) -> str:
+    def classify(self, x: np.ndarray) -> list[str]:
         pass

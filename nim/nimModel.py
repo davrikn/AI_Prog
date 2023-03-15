@@ -21,6 +21,7 @@ class NimModel(nn.Module):
         self.rl2 = nn.ReLU()
         self.sm = nn.Softmax(0)
         self.action_to_index = self.gen_action_index_dict()
+        self.index_to_action = {v: k for k, v in self.action_to_index.items()}
 
         if isfile('../model_dicts/nim.pth'):
             self.load_state_dict(load('../model_dicts/nim.pth'))
@@ -45,11 +46,12 @@ class NimModel(nn.Module):
         x = self.rl2(x)
         return x
 
-    def classify(self, x: np.ndarray):
+    def classify(self, x: np.ndarray) -> list[str]:
         x = tensor(x, dtype=torch.float)
         x = self(x)
         x = nn.Softmax(dim=0)(x)
-        return {v: k for k, v in self.action_to_index.items()}[x.argmax().item()]
+        x = x.detach().numpy()
+        return list(map(lambda x: self.index_to_action[x], np.argsort(x)))
 
     def load_train_data(self):
         file = reader(open('../train.csv'))
