@@ -6,12 +6,12 @@ from hex.hexWorld import HexWorld
 from hex.hexUI import HexUI
 from hex.hexModel import HexModel
 from monteCarlo import MonteCarlo
-from gameWorld import GameWorld
 from typing import Callable
 from model import Model
+from game import Game
 
 def main():
-    get_game: Callable[[], GameWorld] = lambda: None
+    get_game: Callable[[], Game] = lambda: None
     get_ui: Callable[[], HexUI or NimUI] = lambda: None
     model: Model = None
     if configs.game == 'hex':

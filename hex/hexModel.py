@@ -1,10 +1,9 @@
-import os.path
-
+from model import Model
 import numpy as np
 from torch import nn, load
 from os.path import isfile
 
-class HexModel(nn.Module):
+class HexModel(Model):
     def __init__(self, boardsize: int):
         super().__init__()
         self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
@@ -16,8 +15,8 @@ class HexModel(nn.Module):
         self.lin3 = nn.Linear(1, boardsize*boardsize + 1)
         self.sm = nn.Softmax(boardsize * boardsize + 1)
 
-        if isfile('../model_dicts/hex.pth'):
-            self.load_state_dict(load('../model_dicts/hex.pth'))
+        if isfile(f"../model_dicts/hex_size_{boardsize}.pth"):
+            self.load_state_dict(load(f"../model_dicts/hex_size_{boardsize}.pth"))
 
 
     def forward(self, x: np.ndarray) -> np.ndarray:

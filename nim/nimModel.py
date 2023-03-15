@@ -6,8 +6,9 @@ import torch
 from csv import reader
 from functools import reduce
 from os.path import isfile
+from model import Model
 
-class NimModel(nn.Module):
+class NimModel(Model):
     def __init__(self, gamesize: int):
         self.gamesize = gamesize
         self.action_count = sigma = reduce(lambda x, y: x + y, range(1, gamesize+1))
@@ -23,8 +24,8 @@ class NimModel(nn.Module):
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
 
-        if isfile('../model_dicts/nim.pth'):
-            self.load_state_dict(load('../model_dicts/nim.pth'))
+        if isfile(f"../model_dicts/nim_size_{gamesize}.pth"):
+            self.load_state_dict(load(f"../model_dicts/nim_size_{gamesize}.pth"))
 
     def gen_action_index_dict(self):
         action_to_index = dict()
@@ -74,7 +75,9 @@ class NimModel(nn.Module):
         return data
 
 if __name__ == "__main__":
-    model = NimModel(4)
+    gamesize = 4
+    model = NimModel(gamesize)
+    model.load_state_dict(load(f"../model_dicts/nim_size_{gamesize}.pth"))
     data = model.load_train_data()
     crit = nn.CrossEntropyLoss() ## TODO fix loss function, NLLLoss throws runtime error, but MSE is trash for softmax
     optimizer = optim.SGD(model.parameters(), lr=0.01)
@@ -94,4 +97,4 @@ if __name__ == "__main__":
         loss.backward()
         optimizer.step()
     out = model(tensor(data[0][0], dtype=torch.float))
-    torch.save(model.state_dict(), '../model_dicts/nim_v1.pth')
+    torch.save(model.state_dict(), f"../model_dicts/nim_size_{gamesize}.pth")

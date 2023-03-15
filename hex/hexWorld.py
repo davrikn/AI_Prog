@@ -1,4 +1,3 @@
-from gameWorld import GameWorld, Piece
 from game import Game
 
 class HexWorld(Game):
