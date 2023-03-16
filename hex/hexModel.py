@@ -1,11 +1,16 @@
+import configs
 from model import Model
 import numpy as np
 from torch import nn, load
 from os.path import isfile
+import os
+
 
 class HexModel(Model):
-    def __init__(self, boardsize: int):
-        super().__init__()
+    name = 'hex'
+
+    def __init__(self, boardsize: int, snapshotdir: os.PathLike):
+        super().__init__(boardsize, boardsize*boardsize, snapshotdir)
         self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
         self.mp1 = nn.MaxPool2d(2)
         self.conv2 = nn.Conv2d(32, 96, 3, 1, 1)

@@ -1,10 +1,12 @@
 import csv
+import logging
 import random
 from functools import reduce, cmp_to_key
 from os.path import exists
 
 import numpy as np
 
+import configs
 from game import Game
 from typing import TypeVar, Callable
 from math import log, sqrt
@@ -15,6 +17,8 @@ import torch
 
 Node = TypeVar("Node", bound="MonteCarloNode")
 
+logger = logging.getLogger()
+logger.setLevel(configs.log_level)
 
 class MonteCarloNode:
     depth = 0
@@ -46,9 +50,10 @@ class MonteCarloNode:
 
     def __str__(self, level=0) -> str:
         ret = "\t" * level + self.state.enumerate_state()
-        ret += " visits: " + str(self.visits) + " Q: " + str(self.total_score / self.visits) + "\n"
+        ret += " visits: " + str(self.visits) + " Q: " + str(0 if self.visits == 0 else self.total_score / self.visits) + "\n"
         for child in self.children:
             ret += child.__str__(level + 1)
+        return ret
 
     def select_next_child(self) -> Node:
         if self.player == 1:
@@ -110,11 +115,12 @@ class MonteCarlo:
             self.backpropagation(leaf_node, utility)
 
         self.create_train_data()
+        self.flush_train_data()
 
         return self.get_most_visited_edge()
 
     def get_most_visited_edge(self) -> MonteCarloNode:
-        print("total children visits: ", self.get_total_children_visits())
+        logger.debug(f"total children visits: {self.get_total_children_visits()}")
         return sorted(self.root.children, reverse=True, key=lambda child: child.visits)[0]
 
     # TODO: Delete this (debugging method)
@@ -171,6 +177,14 @@ class MonteCarlo:
 
         return dists
 
+    def flush_train_data(self):
+        self.model.append_rbuf_single(self.summarize_node(self.root))
+
+
+    def summarize_node(self, node: MonteCarloNode):
+        distribution = [(x.action, x.visits/node.visits) for x in node.children]
+        return (np.concatenate((node.state.enumerate_state2(), [node.state.player])), distribution)
+
     def create_train_data(self):
         dists = self.get_action_distribution(self.root)
         if dists is None:
@@ -191,7 +205,7 @@ class MonteCarlo:
             state = self.root.state.enumerate_state2()
             player = self.root.player
             dists = self.get_action_distribution(self.root)
-            print("Monte carlo distribution:",dists)
+            logger.debug(f"Monte carlo distribution: {dists}")
 
             writer.writerow([state, player, dists])
 

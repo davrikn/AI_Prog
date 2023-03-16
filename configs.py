@@ -1,8 +1,12 @@
 # Generic configs
+import logging
+
 game = 'nim'
 ui = False
 size = 4
 simulations = 50
+log_level: int = logging.INFO
+
 
 # MCTS parameters
 num_episodes = 200

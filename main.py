@@ -9,6 +9,12 @@ from monteCarlo import MonteCarlo
 from typing import Callable
 from model import Model
 from game import Game
+import logging
+
+logging.basicConfig(format="%(levelname)s: %(message)s")
+
+logger = logging.getLogger()
+logger.setLevel(configs.log_level)
 
 def main():
     get_game: Callable[[], Game] = lambda: None
@@ -17,11 +23,11 @@ def main():
     if configs.game == 'hex':
         get_game = lambda: HexWorld(size=configs.size)
         get_ui = lambda: HexUI(get_game())
-        model = HexModel(gamesize=configs.size)
+        model = HexModel(configs.size, './model_dicts')
     elif configs.game == 'nim':
         get_game = lambda: NimSimWorld(size=configs.size)
         get_ui = lambda: NimUI(get_game())
-        model = NimModel(gamesize=configs.size)
+        model = NimModel(configs.size, './model_dicts')
     else:
         raise Exception(f"Game {configs.game} is not supported")
 
@@ -30,26 +36,29 @@ def main():
         ui.start_game()
     else:
         for i in range(configs.simulations):
-            print("\nSimulation counter:", i + 1)
+            if i % 10 == 0:
+                logger.info(f"On simulation {i}/{configs.simulations}")
+            logger.debug(f"\nSimulation counter: {i + 1}")
             game = get_game()
             turns = 0
             curr_player = 1
             while True:
-                print("\nplayers turn: ", curr_player)
+                logger.debug(f"\nplayers turn: {curr_player}")
                 next_game_state = MonteCarlo(root=game, player=curr_player, model=model).run()
-                print("visited count of best edge: ", next_game_state.visits)
+                logger.debug(f"visited count of best edge: {next_game_state.visits}")
                 turns += 1
                 game = next_game_state.state
                 curr_player = next_game_state.player
 
                 if next_game_state.state.is_final_state():
-                    print("The game ended after", turns, "turns")
+                    logger.debug(f"The game ended after {turns} turns")
                     if next_game_state.player == 1:
-                        print("player 1 won")
+                        logger.debug("player 1 won")
                     else:
-                        print("player 2 won")
+                        logger.debug("player 2 won")
                     break
 
+    model.flush_rbuf()
 
 if __name__ == "__main__":
     main()

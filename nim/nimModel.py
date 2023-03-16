@@ -1,3 +1,4 @@
+import os
 import re
 from ast import literal_eval
 import numpy as np
@@ -9,20 +10,23 @@ from os.path import isfile
 from model import Model
 
 class NimModel(Model):
-    def __init__(self, gamesize: int):
-        self.gamesize = gamesize
-        self.action_count = sigma = reduce(lambda x, y: x + y, range(1, gamesize+1))
-        super().__init__()
+    name = 'nim'
+
+    def __init__(self, gamesize: int, snapshotdir: os.PathLike):
+        super().__init__(gamesize, reduce(lambda x, y: x + y, range(1, gamesize+1)), snapshotdir)
         self.flatten = nn.Flatten()
         self.l1 = nn.Linear(gamesize + 1, gamesize*2)
         self.rl1 = nn.ReLU()
         self.l2 = nn.Linear(gamesize*2, gamesize*2)
         self.rl2 = nn.ReLU()
-        self.l3 = nn.Linear(gamesize*2, sigma)
+        self.l3 = nn.Linear(gamesize*2, self.classes)
         self.rl2 = nn.ReLU()
         self.sm = nn.Softmax(0)
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
+
+        self.optimizer = torch.optim.SGD(self.parameters(), lr=0.01, momentum=0.9)
+
 
         if isfile(f"../model_dicts/nim_size_{gamesize}.pth"):
             self.load_state_dict(load(f"../model_dicts/nim_size_{gamesize}.pth"))
@@ -30,11 +34,11 @@ class NimModel(Model):
     def gen_action_index_dict(self):
         action_to_index = dict()
         k = 0
-        for i in range(self.gamesize):
+        for i in range(self.size):
             pre = '0' * i
-            post = '0' * (self.gamesize - i - 1)
-            for j in range(self.gamesize - i):
-                action_to_index[pre + str(j+1) + post] = k
+            post = '0' * (self.size - i - 1)
+            for j in range(self.size - i):
+                action_to_index[(pre + str(j+1) + post)[::-1]] = k
                 k += 1
         return action_to_index
 
@@ -68,10 +72,7 @@ class NimModel(Model):
             dist_tuples = []
             for i in range(int(len(dist)/2)):
                 dist_tuples.append((dist[i*2][1:-1], float(dist[i*2+1])))
-            y_hat = np.zeros(self.action_count)
-            for tup in dist_tuples:
-                y_hat[self.action_to_index[tup[0][::-1]]] = tup[1]
-            data.append((np.append(state, [player]), y_hat))
+            data.append((np.append(state, [player]), {(k, v) for k, v in dist_tuples}))
         return data
 
 if __name__ == "__main__":
@@ -79,22 +80,7 @@ if __name__ == "__main__":
     model = NimModel(gamesize)
     model.load_state_dict(load(f"../model_dicts/nim_size_{gamesize}.pth"))
     data = model.load_train_data()
-    crit = nn.CrossEntropyLoss() ## TODO fix loss function, NLLLoss throws runtime error, but MSE is trash for softmax
-    optimizer = optim.SGD(model.parameters(), lr=0.01)
-    g = model(tensor(data[0][0], dtype=torch.float))
-    losses = []
+    model.append_rbuf(data)
+    model.flush_rbuf()
 
-    for i in range(len(data)):
-        if i % 100 == 0:
-            print(i)
-        optimizer.zero_grad()
-        (x, y) = data[i]
-        x = tensor(x, dtype=torch.float)
-        y = tensor(y, dtype=torch.float)
-        out = model(x)
-        loss = crit(out, y)
-        losses.append(loss.item())
-        loss.backward()
-        optimizer.step()
-    out = model(tensor(data[0][0], dtype=torch.float))
     torch.save(model.state_dict(), f"../model_dicts/nim_size_{gamesize}.pth")
