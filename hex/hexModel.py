@@ -20,8 +20,8 @@ class HexModel(Model):
         self.lin3 = nn.Linear(1, boardsize*boardsize + 1)
         self.sm = nn.Softmax(boardsize * boardsize + 1)
 
-        if isfile(f"../model_dicts/hex_size_{boardsize}.pth"):
-            self.load_state_dict(load(f"../model_dicts/hex_size_{boardsize}.pth"))
+        if isfile(f"{snapshotdir}/hex_size_{boardsize}.pth"):
+            self.load_state_dict(load(f"{snapshotdir}/hex_size_{boardsize}.pth"))
 
 
     def forward(self, x: np.ndarray) -> np.ndarray:

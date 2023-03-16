@@ -8,7 +8,6 @@ import os
 import configs
 
 logger = logging.getLogger()
-logger.setLevel(configs.log_level)
 
 class Model(nn.Module):
     rbuf: list[tuple[np.ndarray, list[tuple[str, float]]]] = []
@@ -37,7 +36,7 @@ class Model(nn.Module):
         pass
 
     def train_batch(self, X: list[tuple[np.ndarray, list[tuple[str, float]]]]):
-        for i, (_x, _y) in enumerate(X):
+        for i, (_x, _y) in enumerate(X, 1):
             if i % 100 == 0:
                 logger.info(f"Trained on {i} samples")
             self.optimizer.zero_grad()
@@ -62,4 +61,6 @@ class Model(nn.Module):
     def flush_rbuf(self):
         self.train_batch(self.rbuf)
         self.rbuf = []
+        logging.info("Saving statedict")
         torch.save(self.state_dict(), f"{self.snapshotdir}/{self.name}_size_{self.size}.pth")
+        logging.info("Finished saving statedict")

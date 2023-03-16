@@ -1,3 +1,5 @@
+import sys
+
 import configs
 from nim.NimWorld import NimSimWorld
 from nim.nimUI import NimUI
@@ -10,8 +12,9 @@ from typing import Callable
 from model import Model
 from game import Game
 import logging
+from tqdm import trange
 
-logging.basicConfig(format="%(levelname)s: %(message)s")
+logging.basicConfig(format="%(levelname)s %(asctime)s: %(message)s")
 
 logger = logging.getLogger()
 logger.setLevel(configs.log_level)
@@ -35,9 +38,9 @@ def main():
         ui = get_ui()
         ui.start_game()
     else:
-        for i in range(configs.simulations):
-            if i % 10 == 0:
-                logger.info(f"On simulation {i}/{configs.simulations}")
+        for i in trange(configs.simulations):
+            #if i % 10 == 0:
+            #    logger.info(f"On simulation {i}/{configs.simulations}")
             logger.debug(f"\nSimulation counter: {i + 1}")
             game = get_game()
             turns = 0
@@ -59,6 +62,8 @@ def main():
                     break
 
     model.flush_rbuf()
+    logger.info("Exiting")
+    sys.exit(0)
 
 if __name__ == "__main__":
     main()

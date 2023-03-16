@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 from ast import literal_eval
@@ -7,7 +8,11 @@ import torch
 from csv import reader
 from functools import reduce
 from os.path import isfile
+
+import configs
 from model import Model
+
+logger = logging.getLogger()
 
 class NimModel(Model):
     name = 'nim'
@@ -28,8 +33,10 @@ class NimModel(Model):
         self.optimizer = torch.optim.SGD(self.parameters(), lr=0.01, momentum=0.9)
 
 
-        if isfile(f"../model_dicts/nim_size_{gamesize}.pth"):
-            self.load_state_dict(load(f"../model_dicts/nim_size_{gamesize}.pth"))
+        if isfile(f"{snapshotdir}/nim_size_{gamesize}.pth"):
+            logger.info("Loading statedict")
+            self.load_state_dict(load(f"{snapshotdir}/nim_size_{gamesize}.pth"))
+            logger.info("Finished loading statedict")
 
     def gen_action_index_dict(self):
         action_to_index = dict()
@@ -76,6 +83,7 @@ class NimModel(Model):
         return data
 
 if __name__ == "__main__":
+    logging.getLogger().setLevel(logging.DEBUG)
     gamesize = 4
     model = NimModel(gamesize)
     model.load_state_dict(load(f"../model_dicts/nim_size_{gamesize}.pth"))

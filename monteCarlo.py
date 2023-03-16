@@ -18,7 +18,6 @@ import torch
 Node = TypeVar("Node", bound="MonteCarloNode")
 
 logger = logging.getLogger()
-logger.setLevel(configs.log_level)
 
 class MonteCarloNode:
     depth = 0
