@@ -18,7 +18,7 @@ def map_to_player(arr: np.ndarray) -> str:
 class HexWorld(Game):
     def __init__(self, size: int):
         super(HexWorld, self).__init__(size=size)
-        self.board = np.zeros(shape=(self.size, self.size, 2), dtype=int)
+        self.board = self.__create_board()
 
     def get_children_states(self) -> list[(str, HexWorld)]:
         return [(action, self.apply(action)) for action in self.get_possible_actions()]
@@ -45,23 +45,23 @@ class HexWorld(Game):
         tmp.player *= -1
         return tmp
 
-    def state(self, stringified: bool = False):
-        if stringified:
-            txt = "".join([map_to_player(self.board[i,j]) for j in range(self.size) for i in range(self.size)])
-            txt += str(0 if self.player == 1 else 1)
-            return txt
-        else:
-            return (self.board, self.player)
+    def state_stringified(self) -> str:
+        txt = "".join([map_to_player(self.board[i, j]) for j in range(self.size) for i in range(self.size)])
+        txt += str(0 if self.player == 1 else 1)
+        return txt
+
+    def state(self) -> tuple[np.ndarray, int]:
+        return self.board, self.player
 
     def pad(self, input: str or int, length: int = 2, start = True):
         padding = "0"*length
         out = padding+str(input) if start else str(input)+padding
         return out[-length:]
 
-    def is_final_state(self):
+    def is_final_state(self) -> bool:
         return self.check_player_won(self.player*-1)
 
-    def utility(self):
+    def utility(self) -> int:
         if self.check_player_won(1):
             return 1
         elif self.check_player_won(-1):
@@ -113,6 +113,15 @@ class HexWorld(Game):
         neighbors = list(filter(lambda n: n[0] >= 0 and n[0] < self.size and n[1] >= 0 and n[1] < self.size, neighbors))
         return neighbors
 
+    def reset(self, deepcopy: bool = False) -> HexWorld:
+        obj = copy.deepcopy(self) if deepcopy else self
+        obj.board = obj.__create_board()
+        obj.player = 1
+        return obj
+
+    def __create_board(self):
+        return np.zeros(shape=(self.size, self.size, 2), dtype=int)
+
     def __str__(self):
         hexarray = []
         for i in range(self.size):
@@ -147,7 +156,6 @@ if __name__ == "__main__":
     print(world)
     print(f"Current player: {world.player}")
     print(f"Utility: {world.utility()}\n")
-
 
     # P1 win scenario
     world = HexWorld(4)
