@@ -81,7 +81,6 @@ class HexWorld(Game):
             if not check:
                 return False
 
-        # TODO DFS search to find path from one side to the other
 
         is_final_state: Callable[[tuple[int, int]], bool] = (lambda x: x[0] == 3) if player == 1 else (lambda x: x[1] == 3)
 

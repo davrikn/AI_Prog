@@ -15,7 +15,7 @@ class NimSimWorld(Game):
         self.__init_state(player)
 
     def get_children_states(self) -> list[(str, Game)]:
-        pass
+        return [(action, self.apply(action, True)) for action in self.get_possible_actions()]
 
     def get_possible_actions(self) -> list[str]:
         possible_actions: list[str] = []
