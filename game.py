@@ -10,12 +10,12 @@ Game = TypeVar("Game", bound="Game")
 
 
 class Game:
-    def __init__(self, player, size: int = configs.size):
+    def __init__(self, player: int = 1, size: int = configs.size):
         self.size = size
         self.player = player
 
     @abstractmethod
-    def produce_initial_state(self) -> Game:
+    def produce_initial_state(self) -> None:
         pass
 
     @abstractmethod
