@@ -2,6 +2,8 @@ import copy
 
 import numpy as np
 from typing import TypeVar, Callable
+
+import configs
 from game import Game
 from queue import LifoQueue
 
@@ -16,9 +18,10 @@ def map_to_player(arr: np.ndarray) -> str:
     return "0"
 
 class HexWorld(Game):
-    def __init__(self, size: int):
+    def __init__(self, size: int = configs.size):
         super(HexWorld, self).__init__(size=size)
-        self.board = self.__create_board()
+        self.size = size
+        self.__init_state()
 
     def get_children_states(self) -> list[(str, HexWorld)]:
         return [(action, self.apply(action)) for action in self.get_possible_actions()]
@@ -38,10 +41,13 @@ class HexWorld(Game):
         if coordinates[0] >= self.size or coordinates[1] >= self.size:
             raise Exception(f"Action {action} cannot be applied, as the coordinate is out of bounds")
         tmp = copy.deepcopy(self) if deepcopy else self
+        if tmp.finished:
+            raise Exception("Game is already finished")
         piece = tmp.board[coordinates[0]][coordinates[1]]
         if piece[0] != 0 or piece[1] != 0:
             raise Exception('Cannot place piece on an occupied coordinate')
         piece[0 if tmp.player == 1 else 1] = 1
+        tmp.check_player_won(tmp.player)
         tmp.player *= -1
         return tmp
 
@@ -59,15 +65,10 @@ class HexWorld(Game):
         return out[-length:]
 
     def is_final_state(self) -> bool:
-        return self.check_player_won(self.player*-1)
+        return self.finished
 
-    def utility(self) -> int:
-        if self.check_player_won(1):
-            return 1
-        elif self.check_player_won(-1):
-            return -1
-        else:
-            return 0
+    def get_utility(self) -> int:
+        return self.utility
 
     def check_player_won(self, player: int):
         # We check if the previous player has won
@@ -99,6 +100,8 @@ class HexWorld(Game):
             next = frontier.get()
             visited.append(next)
             if is_final_state(next):
+                self.finished = True
+                self.utility = player
                 return True
             neighbors = list(filter(lambda x: is_player(self.board[x[0]][x[1]]), self.neighbors(next)))
             neighbors = list(filter(lambda x: x not in visited, neighbors))
@@ -113,14 +116,16 @@ class HexWorld(Game):
         neighbors = list(filter(lambda n: n[0] >= 0 and n[0] < self.size and n[1] >= 0 and n[1] < self.size, neighbors))
         return neighbors
 
-    def reset(self, deepcopy: bool = False) -> HexWorld:
+    def reset(self, deepcopy: bool = False, player: int = 1) -> HexWorld:
         obj = copy.deepcopy(self) if deepcopy else self
-        obj.board = obj.__create_board()
-        obj.player = 1
+        obj.__init_state()
         return obj
 
-    def __create_board(self):
-        return np.zeros(shape=(self.size, self.size, 2), dtype=int)
+    def __init_state(self, player: int = 1):
+        self.board = np.zeros(shape=(self.size, self.size, 2), dtype=int)
+        self.player = player
+        self.utility = 0
+        self.finished = False
 
     def __str__(self):
         hexarray = []
@@ -148,22 +153,19 @@ class HexWorld(Game):
         return hexarray
 
 if __name__ == "__main__":
-
-
     # No-win scenario
     world = HexWorld(4)
     world = HexWorld(4).apply("0000").apply("0303").apply("0100")
     print(world)
     print(f"Current player: {world.player}")
-    print(f"Utility: {world.utility()}\n")
+    print(f"Utility: {world.get_utility()}\n")
 
     # P1 win scenario
     world = HexWorld(4)
     world = HexWorld(4).apply("0000").apply("0303").apply("0100").apply("0201").apply("0200").apply("0202").apply("0300")
     print(world)
     print(f"Current player: {world.player}")
-    print(f"Player 1 won: {world.is_final_state()}")
-    print(f"Utility: {world.utility()}\n")
+    print(f"Utility: {world.get_utility()}\n")
 
 
     # P2 win scenario
@@ -171,6 +173,5 @@ if __name__ == "__main__":
     world = HexWorld(4).apply("0000").apply("0300").apply("0100").apply("0201").apply("0200").apply("0202").apply("0101").apply("0203")
     print(world)
     print(f"Current player: {world.player}")
-    print(f"Player 2 won: {world.is_final_state()}")
-    print(f"Utility: {world.utility()}\n")
+    print(f"Utility: {world.get_utility()}\n")
 

@@ -4,7 +4,7 @@ import numpy as np
 
 import configs
 
-from typing import TypeVar
+from typing import TypeVar, Union, overload
 
 Game = TypeVar("Game", bound="Game")
 
@@ -15,14 +15,6 @@ class Game:
         self.player = player
 
     @abstractmethod
-    def produce_initial_state(self) -> None:
-        pass
-
-    @abstractmethod
-    def apply(self, action: str) -> Game:
-        pass
-
-    @abstractmethod
     def get_children_states(self) -> list[(str, Game)]:
         pass
 
@@ -31,25 +23,25 @@ class Game:
         pass
 
     @abstractmethod
-    def is_final_state(self):
+    def apply(self, action: str, deepcopy: bool) -> Game:
         pass
 
     @abstractmethod
-    def enumerate_state(self) -> str:
+    def state_stringified(self) -> str:
         pass
 
     @abstractmethod
-    def enumerate_state2(self) -> str:
+    def state(self) -> tuple[np.ndarray, int]:
         pass
 
     @abstractmethod
-    def state_to_array(self) -> np.ndarray:
+    def is_final_state(self) -> bool:
         pass
 
     @abstractmethod
-    def get_child_states_enumerated(self) -> list[str]:
+    def get_utility(self) -> int:
         pass
 
     @abstractmethod
-    def get_state_utility(self) -> int:
+    def reset(self) -> Game:
         pass
