@@ -124,9 +124,7 @@ class MonteCarlo:
             children = [MonteCarloNode(state=x[1], action=x[0], parent=node) for x in node.state.get_children_states()]
             return self.rollout(random.choice(children))
         else:
-            state = node.state.state()
-            state = np.append(state[0], state[1])
-            actions = self.model.classify(state)
+            actions = self.model.classify(node.state.state(deNested=True))
             for action in actions:
                 try:
                     child = node.state.apply(action, deepcopy=True)
@@ -147,7 +145,7 @@ class MonteCarlo:
             return
         nodes = list([self.root])
 
-        data: list[tuple[np.ndarray, list[tuple[str, float]]]] = []
+        data: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]] = []
 
         while len(nodes) != 0:
             node = nodes.pop()
@@ -156,7 +154,7 @@ class MonteCarlo:
             nodes.extend(node.children)
             visits = node.visits
             actions = [(x.action, x.visits / (visits-1)) for x in node.children]
-            data.append((node.state.state(), actions))
+            data.append((node.state.state(deNested=True), actions))
         self.model.append_rbuf(data)
 
 

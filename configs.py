@@ -2,9 +2,9 @@
 import logging
 
 game = 'nim'
-ui = False
+ui = True
 size = 4
-simulations = 2000
+simulations = 2
 log_level: int = logging.INFO
 
 

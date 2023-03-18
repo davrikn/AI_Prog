@@ -56,8 +56,16 @@ class HexWorld(Game):
         txt += str(0 if self.player == 1 else 1)
         return txt
 
-    def state(self) -> tuple[np.ndarray, int]:
-        return self.board, self.player
+    def state(self, deNested: bool = False) -> tuple[np.ndarray, int]:
+        if deNested:
+            board = np.zeros((2, self.size, self.size))
+            for i in range(self.size):
+                for j in range(self.size):
+                    board[0][i][j] = self.board[i][j][0]
+                    board[1][i][j] = self.board[i][j][1]
+            return board, self.player
+        else:
+            return self.board, self.player
 
     def pad(self, input: str or int, length: int = 2, start = True):
         padding = "0"*length

@@ -49,7 +49,7 @@ class NimSimWorld(Game):
     def state_stringified(self) -> str:
         return "".join([str(row) for row in self.board])+str(self.player)
 
-    def state(self) -> tuple[np.ndarray, int]:
+    def state(self, deNested: bool = False) -> tuple[np.ndarray, int]:
         return np.asarray(self.board), self.player
 
     def is_final_state(self) -> bool:
