@@ -44,22 +44,21 @@ def main():
             logger.debug(f"\nSimulation counter: {i + 1}")
             game = get_game()
             turns = 0
-            curr_player = 1
             while True:
-                logger.debug(f"\nplayers turn: {curr_player}")
-                next_game_state = MonteCarlo(root=game, player=curr_player, model=model).run()
+                #logger.debug(f"\nplayers turn: {curr_player}")
+                next_game_state = MonteCarlo(root=game, model=model).run()
                 logger.debug(f"visited count of best edge: {next_game_state.visits}")
                 turns += 1
                 game = next_game_state.state
-                curr_player = next_game_state.player
 
-                if next_game_state.state.is_final_state():
-                    logger.debug(f"The game ended after {turns} turns")
-                    if next_game_state.player == 1:
-                        logger.debug("player 1 won")
-                    else:
-                        logger.debug("player 2 won")
+                utility = next_game_state.state.get_utility()
+                if utility == 1:
+                    logger.debug("player 1 won")
                     break
+                elif utility == -1:
+                    logger.debug("player 2 won")
+                    break
+
 
     model.flush_rbuf()
     logger.info("Exiting")

@@ -25,20 +25,18 @@ class MonteCarloNode:
     total_score = 0
     children = []
 
-    def __init__(self, state: Game, action: str, parent: Node or None, player: int):
+    def __init__(self, state: Game, action: str, parent: Node or None):
         self.state = state
         self.parent = parent
         if self.parent is not None:
             self.depth = parent.depth + 1
-        self.player = player
         self.action = action
 
     def expand(self) -> None:
         children = self.state.get_children_states()
         if len(children) == 0:
             raise Exception("Trying to expand terminal state")
-        self.children = [MonteCarloNode(state=x[1], action=x[0], parent=self, player=self.player * -1) for x in
-                         children]
+        self.children = [MonteCarloNode(state=x[1], action=x[0], parent=self) for x in children]
 
     def is_expanded(self) -> bool:
         return self.visits > 0
@@ -48,17 +46,17 @@ class MonteCarloNode:
         return sqrt(log(self.parent.visits) / (1 + self.visits))
 
     def __str__(self, level=0) -> str:
-        ret = "\t" * level + self.state.enumerate_state()
+        ret = "\t" * level + self.state.state_stringified()
         ret += " visits: " + str(self.visits) + " Q: " + str(0 if self.visits == 0 else self.total_score / self.visits) + "\n"
         for child in self.children:
             ret += child.__str__(level + 1)
         return ret
 
     def select_next_child(self) -> Node:
-        if self.player == 1:
+        if self.state.player == 1:
             return sorted(self.children, reverse=True,
                           key=cmp_to_key(lambda node1, node2: node1.a_t_max() - node2.a_t_max()))[0]
-        if self.player == -1:
+        if self.state.player == -1:
             return sorted(self.children,
                           key=cmp_to_key(lambda node1, node2: node1.a_t_min() - node2.a_t_min()))[0]
 
@@ -91,9 +89,9 @@ class MonteCarloNode:
 
 class MonteCarlo:
 
-    def __init__(self, player, root=Game, model: Model = None):
+    def __init__(self, root=Game, model: Model = None):
         self.model = model
-        self.root = MonteCarloNode(state=root, action="", parent=None, player=player)
+        self.root = MonteCarloNode(state=root, action="", parent=None)
 
     def run(self) -> MonteCarloNode:
         for i in range(num_episodes):
@@ -144,18 +142,19 @@ class MonteCarlo:
     def rollout(self, node: MonteCarloNode):
         if node.state.is_final_state():
             # returns negative score for second player since player 2 is <-1>
-            return node.state.get_state_utility() * node.player
+            return node.state.get_utility()
 
         if self.model is None:
-            children = [MonteCarloNode(state=x[1], parent=node, action=x[0], player=node.player * -1)
-                        for x in node.state.get_children_states()]
+            children = [MonteCarloNode(state=x[1], parent=node, action=x[0]) for x in node.state.get_children_states()]
             return self.rollout(random.choice(children))
         else:
-            actions = self.model.classify(node.state.state_to_array())
+            state = node.state.state()
+            state = np.append(state[0], state[1])
+            actions = self.model.classify(state)
             for action in actions:
                 try:
-                    childnode = node.state.apply(action)
-                    return self.rollout(MonteCarloNode(state=childnode, parent=node, action=action, player=node.player * -1))
+                    childnode = node.state.apply(action, deepcopy=True)
+                    return self.rollout(MonteCarloNode(state=childnode, parent=node, action=action))
                 except:
                     pass
 
@@ -182,7 +181,8 @@ class MonteCarlo:
 
     def summarize_node(self, node: MonteCarloNode):
         distribution = [(x.action, x.visits/node.visits) for x in node.children]
-        return (np.concatenate((node.state.enumerate_state2(), [node.state.player])), distribution)
+        state = node.state.state_stringified()
+        return state, distribution
 
     def create_train_data(self):
         dists = self.get_action_distribution(self.root)
@@ -201,8 +201,8 @@ class MonteCarlo:
         with open('train.csv', 'a', newline='') as f:
             writer = csv.writer(f)
 
-            state = self.root.state.enumerate_state2()
-            player = self.root.player
+            state = self.root.state.state_stringified()
+            player = self.root.state.player
             dists = self.get_action_distribution(self.root)
             logger.debug(f"Monte carlo distribution: {dists}")
 
