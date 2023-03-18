@@ -43,14 +43,14 @@ class NimSimWorld(Game):
             raise Exception(f"Draw count {action[index]} cannot be greater than the current stick count ({self.board[index]}) in the row")
 
         obj.board[index] -= int(action[index])
-        obj.player *= 1
+        obj.player *= -1
         return obj
 
     def state_stringified(self) -> str:
         return "".join([str(row) for row in self.board])+str(self.player)
 
-    def state(self) -> tuple[list[int], int]:
-        return self.board, self.player
+    def state(self) -> tuple[np.ndarray, int]:
+        return np.asarray(self.board), self.player
 
     def is_final_state(self) -> bool:
         return len(list(filter(lambda x: x != 0, self.board))) == 0
