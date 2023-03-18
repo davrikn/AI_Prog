@@ -9,7 +9,7 @@ log_level: int = logging.INFO
 
 
 # MCTS parameters
-num_episodes = 200
+num_episodes = 500
 decay_rate = 0.75
 
 # ANET parameters

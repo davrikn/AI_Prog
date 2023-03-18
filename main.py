@@ -39,13 +39,12 @@ def main():
         ui.start_game()
     else:
         for i in trange(configs.simulations):
-            #if i % 10 == 0:
-            #    logger.info(f"On simulation {i}/{configs.simulations}")
+            if i % 10 == 0:
+                logger.info(f"On simulation {i}/{configs.simulations}")
             logger.debug(f"\nSimulation counter: {i + 1}")
             game = get_game()
             turns = 0
             while True:
-                #logger.debug(f"\nplayers turn: {curr_player}")
                 next_game_state = MonteCarlo(root=game, model=model).run()
                 logger.debug(f"visited count of best edge: {next_game_state.visits}")
                 turns += 1

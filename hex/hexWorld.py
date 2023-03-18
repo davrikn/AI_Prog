@@ -24,7 +24,7 @@ class HexWorld(Game):
         self.__init_state()
 
     def get_children_states(self) -> list[(str, HexWorld)]:
-        return [(action, self.apply(action)) for action in self.get_possible_actions()]
+        return [(action, self.apply(action, deepcopy=True)) for action in self.get_possible_actions()]
 
     def get_possible_actions(self) -> list[str]:
         actions: list[str] = []
