@@ -52,6 +52,7 @@ def main():
                 utility = next_game_state.state.get_utility()
             logger.debug(f"Player {1 if utility == 1 else 2} won")
             model.flush_rbuf()
+            logger.debug(f"Total number of turns: {turns}")
     logger.info("Exiting")
     sys.exit(0)
 

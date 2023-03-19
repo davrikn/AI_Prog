@@ -2,6 +2,7 @@ import csv
 import logging
 import math
 import random
+import time
 from functools import reduce, cmp_to_key
 from os.path import exists
 from hex.hexWorld import HexWorld
@@ -74,6 +75,11 @@ class MonteCarloNode:
         return ret
 
 class MonteCarlo:
+    rollouts = 0
+    rollout_time = 0
+    expands = 0
+    expand_time = 0
+
     def __init__(self, root: Game, model: Model = None):
         self.model = model
         self.root = MonteCarloNode(state=root)
@@ -89,15 +95,25 @@ class MonteCarlo:
                 break
 
             # Expand the leaf node
+            expand_start = time.perf_counter()
             leaf_node.expand()
+            expand_end = time.perf_counter()
+            self.expands += 1
+            self.expand_time += expand_end-expand_start
 
             # Leaf evaluation using rollout simulation
+            rollout_start = time.perf_counter()
             utility = self.rollout(leaf_node)
+            rollout_end = time.perf_counter()
+            self.rollouts += 1
+            self.rollout_time += rollout_end-rollout_start
 
             # Backpropagation - Passing the utility of the final state back up the tree
             self.backpropagate(leaf_node, utility)
             if i == num_episodes-1:
                 logger.debug(f"Exiting after {num_episodes} episodes")
+        logger.debug(f"Average rollout duration: {self.rollout_time/self.rollouts}. Rollout count: {self.rollouts}. Total rollout time: {self.rollout_time}")
+        logger.debug(f"Average expand duration: {self.expand_time/self.expands}. Expand count: {self.expands}. Total expand time: {self.expand_time}")
         self.flush_train_data()
 
         return self.get_most_visited_edge()

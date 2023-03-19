@@ -1,7 +1,11 @@
+import time
+
 import configs
 from hex.hexModel import HexModel
 from hex.hexWorld import HexWorld
 from os import system
+
+machine_move_delay = 3
 
 if __name__ == "__main__":
     game = HexWorld(configs.size)
@@ -20,6 +24,7 @@ if __name__ == "__main__":
         grid.append(row)
 
     def get_machine_play():
+        time.sleep(machine_move_delay)
         actions = model.classify(game.state(deNested=True))
         for action in actions:
             try:
