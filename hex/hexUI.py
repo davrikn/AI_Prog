@@ -2,11 +2,12 @@ import pygame
 import pygame.gfxdraw
 from hex.hexWorld import HexWorld
 from math import *
-
+from hex.hexModel import HexModel
 
 class HexUI(HexWorld):
-    def __init__(self, hex_world: HexWorld):
+    def __init__(self, hex_world: HexWorld, model: HexModel):
         super().__init__(hex_world.size)
+        self.model = model
         screen_width = 750
         screen_height = 500
 

@@ -32,7 +32,6 @@ class NimModel(Model):
 
         self.optimizer = torch.optim.SGD(self.parameters(), lr=0.01, momentum=0.9)
 
-
         if isfile(f"{snapshotdir}/nim_size_{gamesize}.pth"):
             logger.info("Loading statedict")
             self.load_state_dict(load(f"{snapshotdir}/nim_size_{gamesize}.pth"))
@@ -49,7 +48,8 @@ class NimModel(Model):
                 k += 1
         return action_to_index
 
-    def forward(self, x: np.ndarray):
+    def forward(self, x: tuple[torch.Tensor, torch.Tensor]):
+        x = torch.cat((x[0], x[1]))
         x = self.l1(x)
         x = self.rl1(x)
         x = self.l2(x)
@@ -58,8 +58,8 @@ class NimModel(Model):
         x = self.rl2(x)
         return x
 
-    def classify(self, x: np.ndarray) -> list[str]:
-        x = tensor(x, dtype=torch.float)
+    def classify(self, x: tuple[np.ndarray, int]) -> list[str]:
+        x = tensor(x[0], dtype=torch.float), tensor([x[1]], dtype=torch.float)
         x = self(x)
         x = nn.Softmax(dim=0)(x)
         x = x.detach().numpy()

@@ -24,7 +24,7 @@ class HexWorld(Game):
         self.__init_state()
 
     def get_children_states(self) -> list[(str, HexWorld)]:
-        return [(action, self.apply(action)) for action in self.get_possible_actions()]
+        return [(action, self.apply(action, deepcopy=True)) for action in self.get_possible_actions()]
 
     def get_possible_actions(self) -> list[str]:
         actions: list[str] = []
@@ -56,8 +56,16 @@ class HexWorld(Game):
         txt += str(0 if self.player == 1 else 1)
         return txt
 
-    def state(self) -> tuple[np.ndarray, int]:
-        return self.board, self.player
+    def state(self, deNested: bool = False) -> tuple[np.ndarray, int]:
+        if deNested:
+            board = np.zeros((2, self.size, self.size))
+            for i in range(self.size):
+                for j in range(self.size):
+                    board[0][i][j] = self.board[i][j][0]
+                    board[1][i][j] = self.board[i][j][1]
+            return board, self.player
+        else:
+            return self.board, self.player
 
     def pad(self, input: str or int, length: int = 2, start = True):
         padding = "0"*length
@@ -82,7 +90,7 @@ class HexWorld(Game):
                 return False
 
 
-        is_final_state: Callable[[tuple[int, int]], bool] = (lambda x: x[0] == 3) if player == 1 else (lambda x: x[1] == 3)
+        is_final_state: Callable[[tuple[int, int]], bool] = (lambda x: x[0] == self.size-1) if player == 1 else (lambda x: x[1] == self.size-1)
 
         frontier: LifoQueue[tuple[int, int]] = LifoQueue()
         if player == 1:

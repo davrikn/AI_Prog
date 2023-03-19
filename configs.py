@@ -3,14 +3,15 @@ import logging
 
 game = 'nim'
 ui = False
-size = 4
+size = 7
 simulations = 2000
 log_level: int = logging.INFO
 
 
 # MCTS parameters
-num_episodes = 200
+num_episodes = 10
 decay_rate = 0.75
+deepflush = True
 
 # ANET parameters
 input_variables = 100

@@ -1,24 +1,22 @@
 import pygame
 import pygame.gfxdraw
 
+import configs
 from monteCarlo import MonteCarlo
 from nim.NimWorld import NimSimWorld
+from nim.nimModel import NimModel
 from math import *
 
 
 class NimUI(NimSimWorld):
-    def __init__(self, sim_world: NimSimWorld):
-        super().__init__(sim_world.size)
+    def __init__(self, size: int = configs.size, model: NimModel = NimModel(configs.size, '../model_dicts')):
+        super().__init__(size)
+        self.model = model
         self.screen_width = 300
         self.screen_height = 400
 
-        self.sim_world = sim_world
         self.running = True
         self.game_over = False
-
-        self.curr_player = 1
-        self.computer = -1
-        self.player = 1
 
         pygame.init()
 
@@ -32,25 +30,12 @@ class NimUI(NimSimWorld):
         self.draw_board()
 
         while self.running:
-
-            # Did the user click the window close button?
             for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        self.do_move()
-
-                if event.type == pygame.QUIT:
-                    self.running = False
-                else:
-                    # print(event)
-                    pass
-                # Update display
                 self.draw_board()
-                if self.sim_world.is_final_state():
-                    if self.curr_player == self.computer:
-                        print("You lost")
-                    else:
-                        print("You won")
+                if self.player == 1:
+                    self.pick_from_pile()
+                else:
+                    self.computer_move()
 
                 pygame.display.flip()
 
@@ -62,32 +47,46 @@ class NimUI(NimSimWorld):
         start_x = self.screen_width * 0.2
         start_y = self.screen_height * 0.2
         for i in range(self.size):
-            for j in range(self.sim_world.board[i]):
+            for j in range(self.board[i]):
                 rect = pygame.Rect(start_x + j * 20, start_y + i * 40, 5, 30)
                 pygame.draw.rect(self.screen, (0, 0, 0), rect, 3)
 
     def pick_from_pile(self):
         pile = int(input("What pile?"))
         sticks = int(input("How many sticks?"))
-
-        self.sim_world.pick_piece_from_pile(pile - 1, sticks)
+        action = "0"*self.size
+        action = action[:pile]+str(sticks)+action[pile+1:]
+        print(action)
+        self.apply(action)
 
     def computer_move(self):
-        next_game_state = MonteCarlo(root=self.sim_world, player=self.computer).run()
-        self.sim_world.board = next_game_state.state.enumerate_state2()
+        actions = self.model.classify(self.state())
+        for action in actions:
+            try:
+                self.apply(action)
+                break
+            except:
+                pass
         self.draw_board()
 
     def do_move(self):
-        if self.curr_player == self.computer:
+        if self.player == -1:
             print("computer move..")
-            print("curr state: ", self.sim_world.board)
+            print("curr state: ", self.board)
             self.computer_move()
-            print("next state: ", self.sim_world.board)
-            self.curr_player = self.player
+            print("next state: ", self.board)
         else:
             self.pick_from_pile()
-            self.curr_player = self.computer
 
+
+if __name__ == "__main__":
+    model = NimModel(configs.size, '../model_dicts')
+    ui = NimUI()
+    ui.start_game()
+
+
+    pygame.quit()
+    exit(0)
 
 # Done! Time to quit.
 pygame.quit()

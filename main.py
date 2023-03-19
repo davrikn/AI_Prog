@@ -25,43 +25,33 @@ def main():
     model: Model = None
     if configs.game == 'hex':
         get_game = lambda: HexWorld(size=configs.size)
-        get_ui = lambda: HexUI(get_game())
+        get_ui = lambda model: HexUI(get_game(), model)
         model = HexModel(configs.size, './model_dicts')
     elif configs.game == 'nim':
         get_game = lambda: NimSimWorld(size=configs.size)
-        get_ui = lambda: NimUI(get_game())
+        get_ui = lambda model: NimUI(get_game(), model)
         model = NimModel(configs.size, './model_dicts')
     else:
         raise Exception(f"Game {configs.game} is not supported")
 
     if configs.ui:
-        ui = get_ui()
+        ui = get_ui(model)
         ui.start_game()
     else:
         for i in trange(configs.simulations):
-            #if i % 10 == 0:
-            #    logger.info(f"On simulation {i}/{configs.simulations}")
             logger.debug(f"\nSimulation counter: {i + 1}")
             game = get_game()
             turns = 0
-            curr_player = 1
-            while True:
-                logger.debug(f"\nplayers turn: {curr_player}")
-                next_game_state = MonteCarlo(root=game, player=curr_player, model=model).run()
+            utility = game.get_utility()
+            while utility == 0:
+                next_game_state = MonteCarlo(root=game, model=model).run()
                 logger.debug(f"visited count of best edge: {next_game_state.visits}")
                 turns += 1
                 game = next_game_state.state
-                curr_player = next_game_state.player
 
-                if next_game_state.state.is_final_state():
-                    logger.debug(f"The game ended after {turns} turns")
-                    if next_game_state.player == 1:
-                        logger.debug("player 1 won")
-                    else:
-                        logger.debug("player 2 won")
-                    break
-
-    model.flush_rbuf()
+                utility = next_game_state.state.get_utility()
+            logger.debug(f"Player {1 if utility == 1 else 2} won")
+            model.flush_rbuf()
     logger.info("Exiting")
     sys.exit(0)
 

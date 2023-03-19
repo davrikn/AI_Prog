@@ -31,7 +31,7 @@ class Game:
         pass
 
     @abstractmethod
-    def state(self) -> tuple[np.ndarray, int]:
+    def state(self, deNested: bool = False) -> tuple[np.ndarray, int]:
         pass
 
     @abstractmethod
