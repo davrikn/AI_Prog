@@ -90,7 +90,7 @@ class HexWorld(Game):
                 return False
 
 
-        is_final_state: Callable[[tuple[int, int]], bool] = (lambda x: x[0] == 3) if player == 1 else (lambda x: x[1] == 3)
+        is_final_state: Callable[[tuple[int, int]], bool] = (lambda x: x[0] == self.size-1) if player == 1 else (lambda x: x[1] == self.size-1)
 
         frontier: LifoQueue[tuple[int, int]] = LifoQueue()
         if player == 1:

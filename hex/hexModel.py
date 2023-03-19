@@ -48,6 +48,7 @@ class HexModel(Model):
         return action_to_index
 
     def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
+        # TODO: experiment with flipping channels on antagonous player
         _p = x[1]
         x = self.conv1(x[0])
         #x = self.mp1(x)

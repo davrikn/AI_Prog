@@ -143,19 +143,22 @@ class MonteCarlo:
     def flush_train_data(self):
         if self.model is None:
             return
-        nodes = list([self.root])
+        if configs.deepflush:
+            nodes = list([self.root])
 
-        data: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]] = []
+            data: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]] = []
 
-        while len(nodes) != 0:
-            node = nodes.pop()
-            if node.visits <= 1:
-                continue
-            nodes.extend(node.children)
-            visits = node.visits
-            actions = [(x.action, x.visits / (visits-1)) for x in node.children]
-            data.append((node.state.state(deNested=True), actions))
-        self.model.append_rbuf(data)
+            while len(nodes) != 0:
+                node = nodes.pop()
+                if node.visits <= 1:
+                    continue
+                nodes.extend(node.children)
+                visits = node.visits
+                actions = [(x.action, x.visits / (visits-1)) for x in node.children]
+                data.append((node.state.state(deNested=True), actions))
+            self.model.append_rbuf(data)
+        elif self.root.visits > 1:
+            self.model.append_rbuf_single((self.root.state.state(deNested=True), [(x.action, x.visits / (self.root.visits-1)) for x in self.root.children]))
 
 
 

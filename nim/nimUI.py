@@ -30,25 +30,12 @@ class NimUI(NimSimWorld):
         self.draw_board()
 
         while self.running:
-
-            # Did the user click the window close button?
             for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        self.do_move()
-
-                if event.type == pygame.QUIT:
-                    self.running = False
-                else:
-                    # print(event)
-                    pass
-                # Update display
                 self.draw_board()
-                if self.is_final_state():
-                    if self.player == -1:
-                        print("You lost")
-                    else:
-                        print("You won")
+                if self.player == 1:
+                    self.pick_from_pile()
+                else:
+                    self.computer_move()
 
                 pygame.display.flip()
 
