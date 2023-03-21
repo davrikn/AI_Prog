@@ -32,9 +32,9 @@ class NimModel(Model):
 
         self.optimizer = torch.optim.SGD(self.parameters(), lr=0.01, momentum=0.9)
 
-        if isfile(f"{snapshotdir}/nim_size_{gamesize}.pth"):
+        if isfile(f"{snapshotdir}/{self.name}_size_{gamesize}.pth"):
             logger.info("Loading statedict")
-            self.load_state_dict(load(f"{snapshotdir}/nim_size_{gamesize}.pth"))
+            self.load_state_dict(load(f"{snapshotdir}/{self.name}_size_{gamesize}.pth"))
             logger.info("Finished loading statedict")
 
     def gen_action_index_dict(self):

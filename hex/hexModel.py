@@ -10,26 +10,26 @@ from logging import getLogger
 logger = getLogger()
 
 class HexModel(Model):
-    name = 'hex'
+    name = 'hex_v2'
 
     def __init__(self, boardsize: int, snapshotdir: os.PathLike):
         super().__init__(boardsize, boardsize*boardsize, snapshotdir)
+        self.mp = nn.MaxPool2d(2)
         self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
-        self.mp1 = nn.MaxPool2d(2)
-        self.conv2 = nn.Conv2d(32, 96, 3, 1, 1)
-        self.mp2 = nn.MaxPool2d(2)
-        self.lin1 = nn.Linear(int(96*boardsize*boardsize+1), 256)
-        self.lin2 = nn.Linear(256, 128)
-        self.lin3 = nn.Linear(128, boardsize*boardsize)
+        self.conv2 = nn.Conv2d(32, 64, 3, 1, 1)
+        self.conv3 = nn.Conv2d(64, 128, 3, 1, 1)
+        self.lin1 = nn.Linear(128*boardsize*boardsize+1, 512)
+        self.lin2 = nn.Linear(512, 256)
+        self.lin3 = nn.Linear(256, boardsize*boardsize)
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
 
         self.optimizer = torch.optim.SGD(self.parameters(), lr=0.01, momentum=0.9)
 
-        if isfile(f"{snapshotdir}/hex_size_{boardsize}.pth"):
+        if isfile(f"{snapshotdir}/{self.name}_size_{boardsize}.pth"):
             logger.info("Loading statedict")
-            self.load_state_dict(load(f"{snapshotdir}/hex_size_{boardsize}.pth"))
+            self.load_state_dict(load(f"{snapshotdir}/{self.name}_size_{boardsize}.pth"))
             logger.info("Finished loading statedict")
 
     def pad(self, input: str or int, length: int = 2, start=True):
@@ -54,6 +54,7 @@ class HexModel(Model):
         #x = self.mp1(x)
         x = self.conv2(x)
         #x = self.mp2(x)
+        x = self.conv3(x)
         x = x.view(-1)
         x = torch.cat((x, _p))
         x = self.lin1(x)
