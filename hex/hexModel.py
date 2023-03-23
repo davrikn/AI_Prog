@@ -18,7 +18,7 @@ class HexModel(Model):
         self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
         self.conv2 = nn.Conv2d(32, 64, 3, 1, 1)
         self.conv3 = nn.Conv2d(64, 128, 3, 1, 1)
-        self.lin1 = nn.Linear(128*boardsize*boardsize+1, 512)
+        self.lin1 = nn.Linear(128*boardsize*boardsize, 512)
         self.lin2 = nn.Linear(512, 256)
         self.lin3 = nn.Linear(256, boardsize*boardsize)
         self.sm = nn.Softmax(dim=0)
@@ -49,18 +49,20 @@ class HexModel(Model):
 
     def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
         # TODO: experiment with flipping channels on antagonous player
-        _p = x[1]
+        if x[1] == -1:
+            temp = x[0][0]
+            x[0][0] = x[0][1]
+            x[0][1] = temp
+
         x = self.conv1(x[0])
         #x = self.mp1(x)
         x = self.conv2(x)
         #x = self.mp2(x)
         x = self.conv3(x)
         x = x.view(-1)
-        x = torch.cat((x, _p))
         x = self.lin1(x)
         x = self.lin2(x)
         x = self.lin3(x)
-        x = self.sm(x)
         return x
 
     def classify(self, x: tuple[np.ndarray, int]) -> list[str]:
