@@ -47,6 +47,7 @@ def main():
             utility = game.get_utility()
             while utility == 0:
                 if total_episodes <= 200 and total_episodes % 50 == 0:
+                    model.flush_rbuf()
                     logger.info(f"Saved model at checkpoint: {total_episodes} episodes")
                     model.save_model(file_name=f'hex_size_{model.size}_checkpoint_{total_episodes}')
                 next_game_state = MonteCarlo(root=game, model=model).run()
@@ -58,7 +59,7 @@ def main():
 
                 utility = next_game_state.state.get_utility()
             logger.debug(f"Player {1 if utility == 1 else 2} won")
-            model.flush_rbuf()
+            # model.flush_rbuf()
             logger.debug(f"Total number of turns: {turns}")
     logger.info("Exiting")
     sys.exit(0)

@@ -36,6 +36,8 @@ class Tournament:
                 agent1.losses += 1
                 agent2.wins += 1
 
+            if winner != starting_player:
+                print("debug")
             starting_player = 2 if starting_player == 1 else 1
         if agent1_curr_wins > agent2_curr_wins:
             print(f'{agent1.name} won vs {agent2.name} with {agent1_curr_wins} wins')

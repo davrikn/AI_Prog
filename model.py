@@ -60,6 +60,7 @@ class Model(nn.Module):
 
     def flush_rbuf(self):
         self.train_batch(self.rbuf)
+        logging.info("Training batch")
         self.rbuf = []
         logging.debug("Saving statedict")
         # torch.save(self.state_dict(), f"{self.snapshotdir}/{self.name}_size_{self.size}.pth")

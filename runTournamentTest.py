@@ -1,7 +1,9 @@
+
 import configs
 from hex.hexAgent import HexAgent
 from hex.hexModel import HexModel
 from tournament import Tournament
+
 
 agent0 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_4_checkpoint_0.pt")
                   , name="Checkpoint 0 agent")
