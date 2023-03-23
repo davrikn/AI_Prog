@@ -14,18 +14,26 @@ class HexModel(Model):
 
     def __init__(self, boardsize: int, snapshotdir: os.PathLike):
         super().__init__(boardsize, boardsize*boardsize, snapshotdir)
-        self.mp = nn.MaxPool2d(2)
         self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
         self.conv2 = nn.Conv2d(32, 64, 3, 1, 1)
-        self.conv3 = nn.Conv2d(64, 128, 3, 1, 1)
-        self.lin1 = nn.Linear(128*boardsize*boardsize+1, 512)
-        self.lin2 = nn.Linear(512, 256)
-        self.lin3 = nn.Linear(256, boardsize*boardsize)
+        self.lin1 = nn.Linear(64 * boardsize * boardsize, 128)
+        self.lin2 = nn.Linear(128, boardsize * boardsize)
+        # self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
+        # self.conv2 = nn.Conv2d(32, 64, 3, 1, 1)
+        # self.conv3 = nn.Conv2d(64, 128, 3, 1, 1)
+        # self.lin1 = nn.Linear(128*boardsize*boardsize, 512)
+        # self.lin2 = nn.Linear(512, 256)
+        # self.lin3 = nn.Linear(256, boardsize*boardsize)
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
 
         self.optimizer = torch.optim.SGD(self.parameters(), lr=0.01, momentum=0.9)
+
+        if isfile(f"{snapshotdir}"):
+            logger.info("Loading statedict")
+            self.load_state_dict(load(f"{snapshotdir}"))
+            logger.info("Finished loading statedict")
 
         if isfile(f"{snapshotdir}/{self.name}_size_{boardsize}.pth"):
             logger.info("Loading statedict")
@@ -49,18 +57,20 @@ class HexModel(Model):
 
     def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
         # TODO: experiment with flipping channels on antagonous player
-        _p = x[1]
+        if x[1] == -1:
+            temp = x[0][0]
+            x[0][0] = x[0][1]
+            x[0][1] = temp
+
         x = self.conv1(x[0])
         #x = self.mp1(x)
         x = self.conv2(x)
         #x = self.mp2(x)
-        x = self.conv3(x)
+        # x = self.conv3(x)
         x = x.view(-1)
-        x = torch.cat((x, _p))
         x = self.lin1(x)
         x = self.lin2(x)
-        x = self.lin3(x)
-        x = self.sm(x)
+        # x = self.lin3(x)
         return x
 
     def classify(self, x: tuple[np.ndarray, int]) -> list[str]:
