@@ -5,6 +5,8 @@ import torch.nn as nn
 import torch
 import os
 
+import configs
+
 logger = logging.getLogger()
 
 class Model(nn.Module):
@@ -60,5 +62,8 @@ class Model(nn.Module):
         self.train_batch(self.rbuf)
         self.rbuf = []
         logging.debug("Saving statedict")
-        torch.save(self.state_dict(), f"{self.snapshotdir}/{self.name}_size_{self.size}.pth")
+        # torch.save(self.state_dict(), f"{self.snapshotdir}/{self.name}_size_{self.size}.pth")
         logging.debug("Finished saving statedict")
+
+    def save_model(self, file_name: str):
+        torch.save(self.state_dict(), f"{configs.model_dir}/{file_name}.pt")

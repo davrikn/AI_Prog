@@ -26,7 +26,8 @@ def main():
     if configs.game == 'hex':
         get_game = lambda: HexWorld(size=configs.size)
         get_ui = lambda model: HexUI(get_game(), model)
-        model = HexModel(configs.size, './model_dicts')
+        # model = HexModel(configs.size, './model_dicts')
+        model = HexModel(configs.size, snapshotdir=None)
     elif configs.game == 'nim':
         get_game = lambda: NimSimWorld(size=configs.size)
         get_ui = lambda model: NimUI(get_game(), model)
@@ -38,15 +39,21 @@ def main():
         ui = get_ui(model)
         ui.start_game()
     else:
+        total_episodes = 0
         for i in trange(configs.simulations):
             logger.debug(f"\nSimulation counter: {i + 1}")
             game = get_game()
             turns = 0
             utility = game.get_utility()
             while utility == 0:
+                if total_episodes <= 200 and total_episodes % 50 == 0:
+                    logger.info(f"Saved model at checkpoint: {total_episodes} episodes")
+                    model.save_model(file_name=f'hex_size_{model.size}_checkpoint_{total_episodes}')
                 next_game_state = MonteCarlo(root=game, model=model).run()
+                # next_game_state = MonteCarlo(root=game).run()
                 logger.debug(f"visited count of best edge: {next_game_state.visits}")
                 turns += 1
+                total_episodes += 1
                 game = next_game_state.state
 
                 utility = next_game_state.state.get_utility()
