@@ -136,7 +136,7 @@ class MonteCarlo:
         if node.state.is_final_state():
             return node.state.get_utility()
 
-        if self.model is None:
+        if self.model is None or random.random() < configs.epsilon:
             children = [MonteCarloNode(state=x[1], action=x[0], parent=node) for x in node.state.get_children_states()]
             return self.rollout(random.choice(children))
         else:

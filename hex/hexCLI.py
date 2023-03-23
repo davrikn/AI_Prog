@@ -44,6 +44,7 @@ if __name__ == "__main__":
             except:
                 print(f"Illegal action {action}")
 
+    # Set the players here
     p1 = get_machine_play
     p2 = get_machine_play
 

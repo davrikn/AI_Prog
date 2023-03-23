@@ -12,6 +12,7 @@ log_level: int = logging.INFO
 num_episodes = 50
 decay_rate = 0.75
 deepflush = True
+epsilon = 0.3
 
 # ANET parameters
 input_variables = 100
