@@ -15,6 +15,11 @@ class Tournament:
         self.UI = UI
 
     def run_tournament(self):
+        for agent in self.agents:
+            for param in agent.model.parameters():
+                print(param.data)
+            print('---------------------------------------------------------------')
+
         matches = self.create_match_ups()
         random.shuffle(matches)
         for match_up in matches:

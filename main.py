@@ -59,8 +59,6 @@ def main():
                 utility = next_game_state.state.get_utility()
                 if total_episodes % 8 == 0:
                     model.flush_rbuf()
-                    for param in model.parameters():
-                        print(param.data)
             logger.debug(f"Player {1 if utility == 1 else 2} won")
             logger.debug(f"Total number of turns: {turns}")
     logger.info("Exiting")

@@ -76,10 +76,14 @@ class HexModel(Model):
         # x = self.lin3(x)
         return x
 
+    # TODO: DEBUG THIS!!!!!
     def classify(self, x: tuple[np.ndarray, int]) -> list[str]:
         self.preprocess(x)
         x = tensor(x[0], dtype=torch.float), tensor([x[1]], dtype=torch.float)
         x = self(x)
         x = self.sm(x)
         x = x.detach().numpy()
+        # actions = [self.index_to_action[i] for i in range(len(x))]
+        # sorted_actions = [x for _, x in sorted(zip(x, actions), key=lambda pair: pair[0], reverse=True)]
         return list(map(lambda x: self.index_to_action[x], np.argsort(x)))
+        # return sorted_actions
