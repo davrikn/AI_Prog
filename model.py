@@ -24,6 +24,10 @@ class Model(nn.Module):
         self.snapshotdir = snapshotdir
 
     @abstractmethod
+    def preprocess(self, x: tuple[np.ndarray, int]) -> torch.Tensor:
+        pass
+
+    @abstractmethod
     def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
         pass
 
@@ -36,6 +40,8 @@ class Model(nn.Module):
         pass
 
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
+        for x in X:
+            self.preprocess(x[0])
         for i, (_x, _y) in enumerate(X, 1):
             if i % 100 == 0:
                 logger.debug(f"Trained on {i} samples")
@@ -45,7 +51,7 @@ class Model(nn.Module):
                 y[self.action_to_index[k]] = v
             y = torch.tensor(y, dtype=torch.float)
 
-            x = torch.tensor(_x[0], dtype=torch.float), torch.tensor([_x[1]], dtype=torch.float)
+            x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True), torch.tensor([_x[1]], dtype=torch.float)
             x = self(x)
 
             loss = self.crit(x, y)

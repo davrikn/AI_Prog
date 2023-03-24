@@ -1,3 +1,5 @@
+import copy
+
 import configs
 from model import Model
 import numpy as np
@@ -9,15 +11,16 @@ from logging import getLogger
 
 logger = getLogger()
 
+
 class HexModel(Model):
     name = 'hex_v2'
 
     def __init__(self, boardsize: int, snapshotdir: os.PathLike):
-        super().__init__(boardsize, boardsize*boardsize, snapshotdir)
-        self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
-        self.conv2 = nn.Conv2d(32, 64, 3, 1, 1)
-        self.lin1 = nn.Linear(64 * boardsize * boardsize, 128)
-        self.lin2 = nn.Linear(128, boardsize * boardsize)
+        super().__init__(boardsize, boardsize * boardsize, snapshotdir)
+        self.conv1 = nn.Conv2d(2, 8, 3, 1, 1)
+        # self.conv2 = nn.Conv2d(8, 16, 3, 1, 1)
+        # self.lin1 = nn.Linear(8 * boardsize * boardsize, 32)
+        self.lin1 = nn.Linear(8 * boardsize * boardsize, boardsize * boardsize)
         # self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
         # self.conv2 = nn.Conv2d(32, 64, 3, 1, 1)
         # self.conv3 = nn.Conv2d(64, 128, 3, 1, 1)
@@ -28,7 +31,7 @@ class HexModel(Model):
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
 
-        self.optimizer = torch.optim.SGD(self.parameters(), lr=0.01, momentum=0.9)
+        self.optimizer = torch.optim.SGD(self.parameters(), lr=configs.learning_rate, momentum=0.9)
 
         if isfile(f"{snapshotdir}"):
             logger.info("Loading statedict")
@@ -41,8 +44,8 @@ class HexModel(Model):
             logger.info("Finished loading statedict")
 
     def pad(self, input: str or int, length: int = 2, start=True):
-        padding = "0"*length
-        out = padding+str(input) if start else str(input)+padding
+        padding = "0" * length
+        out = padding + str(input) if start else str(input) + padding
         return out[-length:]
 
     def gen_action_index_dict(self):
@@ -50,30 +53,31 @@ class HexModel(Model):
         k = 0
         for i in range(self.size):
             for j in range(self.size):
-                action = self.pad(i)+self.pad(j)
+                action = self.pad(i) + self.pad(j)
                 action_to_index[action] = k
                 k += 1
         return action_to_index
 
-    def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
-        # TODO: experiment with flipping channels on antagonous player
+    def preprocess(self, x: tuple[np.ndarray, int]) -> None:
         if x[1] == -1:
-            temp = x[0][0]
+            temp = copy.deepcopy(x[0][0])
             x[0][0] = x[0][1]
             x[0][1] = temp
 
+    def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
         x = self.conv1(x[0])
-        #x = self.mp1(x)
-        x = self.conv2(x)
-        #x = self.mp2(x)
+        # x = self.mp1(x)
+        # x = self.conv2(x)
+        # x = self.mp2(x)
         # x = self.conv3(x)
         x = x.view(-1)
         x = self.lin1(x)
-        x = self.lin2(x)
+        # x = self.lin2(x)
         # x = self.lin3(x)
         return x
 
     def classify(self, x: tuple[np.ndarray, int]) -> list[str]:
+        self.preprocess(x)
         x = tensor(x[0], dtype=torch.float), tensor([x[1]], dtype=torch.float)
         x = self(x)
         x = self.sm(x)

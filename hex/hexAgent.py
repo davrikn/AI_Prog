@@ -11,12 +11,15 @@ class HexAgent:
 
     def perform_move(self, state: HexWorld) -> HexWorld:
         actions = self.model.classify(state.state(deNested=True))
+        illegal_moves = 0
         for action in actions:
             try:
                 state.apply(action)
                 break
             except:
+                illegal_moves += 1
                 pass
+        # print(illegal_moves)
         return state
 
 

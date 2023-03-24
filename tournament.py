@@ -8,10 +8,11 @@ from hex.hexWorld import HexWorld
 
 class Tournament:
 
-    def __init__(self, agents: list[HexAgent], G=25):
+    def __init__(self, agents: list[HexAgent], UI: bool, G=25):
         self.agents = agents
         self.G = G
         self.M = len(agents)
+        self.UI = UI
 
     def run_tournament(self):
         matches = self.create_match_ups()
@@ -40,9 +41,9 @@ class Tournament:
                 print("debug")
             starting_player = 2 if starting_player == 1 else 1
         if agent1_curr_wins > agent2_curr_wins:
-            print(f'{agent1.name} won vs {agent2.name} with {agent1_curr_wins} wins')
+            print(f'{agent1.name} won vs {agent2.name} with {agent1_curr_wins}/{self.G} wins')
         else:
-            print(f'{agent2.name} won vs {agent1.name} with {agent2_curr_wins} wins')
+            print(f'{agent2.name} won vs {agent1.name} with {agent2_curr_wins}/{self.G} wins')
 
     def play_game(self, agent1: HexAgent, agent2: HexAgent, starting_player: int) -> int:
         game = HexWorld(size=configs.size)
@@ -60,6 +61,8 @@ class Tournament:
                 finished = game.is_final_state()
                 if finished:
                     winning_agent = agents_turn
+            if self.UI:
+                pass
         return winning_agent
 
     def create_match_ups(self):

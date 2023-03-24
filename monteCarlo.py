@@ -177,10 +177,6 @@ class MonteCarlo:
             self.model.append_rbuf_single((self.root.state.state(deNested=True), [(x.action, x.visits / (self.root.visits-1)) for x in self.root.children]))
 
 
-
-
-
-
 if __name__ == "__main__":
     logging.basicConfig()
     logger.setLevel(configs.log_level)
