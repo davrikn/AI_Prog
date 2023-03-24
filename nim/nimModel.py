@@ -59,7 +59,7 @@ class NimModel(Model):
         return x
 
     def classify(self, x: tuple[np.ndarray, int]) -> list[str]:
-        x = tensor(x[0], dtype=torch.float), tensor([x[1]], dtype=torch.float)
+        x = tensor(x[0], dtype=torch.float, requires_grad=True), tensor([x[1]], dtype=torch.float)
         x = self(x)
         x = nn.Softmax(dim=0)(x)
         x = x.detach().numpy()
