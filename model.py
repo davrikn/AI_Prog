@@ -50,11 +50,21 @@ class Model(nn.Module):
             for k, v in _y:
                 y[self.action_to_index[k]] = v
             y = torch.tensor(y, dtype=torch.float)
-
             x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True), torch.tensor([_x[1]], dtype=torch.float)
             x = self(x)
 
-            loss = self.crit(x, y)
+            x2 = x.detach()
+
+            for idx, prob in enumerate(y):
+                if prob == 0:
+                    x2[idx] = 0
+            scaled_x_only_valid = x2.numpy() / np.sum(x2.numpy())
+            for idx, scaled_x in enumerate(scaled_x_only_valid):
+                x2[idx] = float(scaled_x)
+
+            x2 = torch.tensor(x2.numpy(), dtype=torch.float, requires_grad=True)
+
+            loss = self.crit(x2, y)
             loss.backward()
             self.optimizer.step()
 

@@ -14,7 +14,7 @@ import configs
 from game import Game
 from typing import TypeVar, Callable
 from math import log, sqrt
-from configs import input_variables, num_episodes, decay_rate
+from configs import input_variables, num_rollouts, decay_rate
 from model import Model
 from torch import nn
 import torch
@@ -85,7 +85,7 @@ class MonteCarlo:
         self.root = MonteCarloNode(state=root)
 
     def run(self) -> MonteCarloNode:
-        for i in range(num_episodes):
+        for i in range(num_rollouts):
             # Tree Search using Tree Policy
             leaf_node = self.tree_search()
 
@@ -110,8 +110,8 @@ class MonteCarlo:
 
             # Backpropagation - Passing the utility of the final state back up the tree
             self.backpropagate(leaf_node, utility)
-            if i == num_episodes-1:
-                logger.debug(f"Exiting after {num_episodes} episodes")
+            if i == num_rollouts-1:
+                logger.debug(f"Exiting after {num_rollouts} episodes")
         logger.debug(f"Average rollout duration: {self.rollout_time/self.rollouts}. Rollout count: {self.rollouts}. Total rollout time: {self.rollout_time}")
         logger.debug(f"Average expand duration: {self.expand_time/self.expands}. Expand count: {self.expands}. Total expand time: {self.expand_time}")
         self.flush_train_data()

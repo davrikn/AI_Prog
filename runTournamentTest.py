@@ -6,15 +6,15 @@ from tournament import Tournament
 
 
 agent0 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_7_checkpoint_0.pt")
-                  , name="Checkpoint 0 agent")
+                  , name="Checkpoint0Agent")
 agent50 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_7_checkpoint_50.pt")
-                   , name="Checkpoint 50 agent")
+                   , name="Checkpoint50Agent")
 agent100 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_7_checkpoint_100.pt")
-                    , name="Checkpoint 100 agent")
+                    , name="Checkpoint100Agent")
 agent150 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_7_checkpoint_150.pt")
-                    , name="Checkpoint 150 agent")
+                    , name="Checkpoint150Agent")
 agent200 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_7_checkpoint_200.pt")
-                    , name="Checkpoint 200 agent")
+                    , name="Checkpoint200Agent")
 
 tournament = Tournament([agent0, agent50, agent100, agent150, agent200], UI=False)
 tournament.run_tournament()
