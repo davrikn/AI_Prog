@@ -11,6 +11,7 @@ class HexAgent:
 
     def perform_move(self, state: HexWorld) -> HexWorld:
         actions = self.model.classify(state.state(deNested=True))
+        # actions.reverse()
         illegal_moves = 0
         for action in actions:
             try:

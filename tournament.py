@@ -42,8 +42,6 @@ class Tournament:
                 agent1.losses += 1
                 agent2.wins += 1
 
-            if winner != starting_player:
-                print("debug")
             starting_player = 2 if starting_player == 1 else 1
         if agent1_curr_wins > agent2_curr_wins:
             print(f'{agent1.name} won vs {agent2.name} with {agent1_curr_wins}/{self.G} wins')
@@ -61,13 +59,15 @@ class Tournament:
                 finished = game.is_final_state()
                 if finished:
                     winning_agent = agents_turn
-            else:
+            elif agents_turn == 2:
                 game = agent2.perform_move(game)
                 finished = game.is_final_state()
                 if finished:
                     winning_agent = agents_turn
+            agents_turn = 2 if agents_turn == 1 else 1
             if self.UI:
                 pass
+        # print(f'{game}\n')
         return winning_agent
 
     def create_match_ups(self):

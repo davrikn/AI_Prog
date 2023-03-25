@@ -9,14 +9,14 @@ log_level: int = logging.INFO
 
 
 # MCTS parameters
-num_episodes = 25
+num_episodes = 50
 decay_rate = 1
-epsilon = 0.3
+epsilon = 0.2
 deepflush = False
 
 # ANET parameters
 input_variables = 100
-learning_rate = 0.05
+learning_rate = 0.025
 num_hidden_layers = 50
 activation_function = 'RELU'
 
