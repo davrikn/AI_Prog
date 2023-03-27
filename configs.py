@@ -3,15 +3,16 @@ import logging
 
 game = 'hex'
 ui = False
-size = 7
+size = 5
 simulations = 25
 log_level: int = logging.INFO
 
 
 # MCTS parameters
-num_rollouts = 250
+num_episodes = 200
+num_rollouts = 1000
 decay_rate = 1
-epsilon = 0.25
+epsilon = 0.3
 deepflush = False
 
 # ANET parameters

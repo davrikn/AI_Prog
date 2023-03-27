@@ -1,11 +1,15 @@
 import logging
+import random
 from abc import abstractmethod
+from os.path import exists
+
 import numpy as np
 import torch.nn as nn
 import torch
 import os
 
 import configs
+import utils
 
 logger = logging.getLogger()
 
@@ -75,6 +79,9 @@ class Model(nn.Module):
         self.rbuf.append(data)
 
     def flush_rbuf(self):
+        random.shuffle(self.rbuf)
+        utils.save_train_data(self.rbuf)
+
         self.train_batch(self.rbuf)
         logging.info("Training batch")
         self.rbuf = []
@@ -84,3 +91,4 @@ class Model(nn.Module):
 
     def save_model(self, file_name: str):
         torch.save(self.state_dict(), f"{configs.model_dir}/{file_name}.pt")
+

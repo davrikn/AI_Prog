@@ -39,26 +39,27 @@ def main():
         ui = get_ui(model)
         ui.start_game()
     else:
-        total_moves = 0
-        for i in trange(configs.simulations):
-            logger.debug(f"\nSimulation counter: {i + 1}")
+        total_episodes = 0
+        simulations = 0
+        while total_episodes <= configs.num_episodes:
+            logger.debug(f"\nSimulation counter: {simulations + 1}")
             game = get_game()
             turns = 0
             utility = game.get_utility()
             while utility == 0:
-                if total_moves <= 200 and total_moves % 50 == 0:
-                    model.save_model(file_name=f'hex_size_{model.size}_checkpoint_{total_moves}')
-                    logger.info(f"Saved model at checkpoint: {total_moves} episodes")
+                if total_episodes % 10 == 0:
+                    model.flush_rbuf()
+                if total_episodes <= 200 and total_episodes % 50 == 0:
+                    model.save_model(file_name=f'hex_size_{model.size}_checkpoint_{total_episodes}')
+                    logger.info(f"Saved model at checkpoint: {total_episodes} episodes")
                 next_game_state = MonteCarlo(root=game, model=model).run()
                 # next_game_state = MonteCarlo(root=game).run()
                 logger.debug(f"visited count of best edge: {next_game_state.visits}")
                 turns += 1
-                total_moves += 1
+                total_episodes += 1
                 game = next_game_state.state
 
                 utility = next_game_state.state.get_utility()
-                if total_moves % 3 == 0:
-                    model.flush_rbuf()
             logger.debug(f"Player {1 if utility == 1 else 2} won")
             logger.debug(f"Total number of turns: {turns}")
     logger.info("Exiting")

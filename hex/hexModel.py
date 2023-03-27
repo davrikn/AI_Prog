@@ -17,10 +17,15 @@ class HexModel(Model):
 
     def __init__(self, boardsize: int, snapshotdir: os.PathLike):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
-        self.conv1 = nn.Conv2d(2, 16, 3, 1, 1)
-        self.conv2 = nn.Conv2d(16, 32, 3, 1, 1)
+        self.conv1 = nn.Conv2d(2, 20, 3, 1, 1)
+        self.conv2 = nn.Conv2d(20, 20, 3, 1, 1)
+        self.conv3 = nn.Conv2d(20, 20, 3, 1, 1)
+        self.conv4 = nn.Conv2d(20, 20, 3, 1, 1)
+        self.conv5 = nn.Conv2d(20, 20, 3, 1, 1)
         # self.lin1 = nn.Linear(8 * boardsize * boardsize, 32)
-        self.lin1 = nn.Linear(32 * boardsize * boardsize, boardsize * boardsize)
+        self.lin1 = nn.Linear(20 * boardsize * boardsize, 256)
+        self.lin2 = nn.Linear(256, 128)
+        self.lin3 = nn.Linear(128, boardsize * boardsize)
         # self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
         # self.conv2 = nn.Conv2d(32, 64, 3, 1, 1)
         # self.conv3 = nn.Conv2d(64, 128, 3, 1, 1)
@@ -68,12 +73,15 @@ class HexModel(Model):
         x = self.conv1(x[0])
         # x = self.mp1(x)
         x = self.conv2(x)
+        x = self.conv3(x)
+        x = self.conv4(x)
+        x = self.conv5(x)
         # x = self.mp2(x)
         # x = self.conv3(x)
         x = x.view(-1)
         x = self.lin1(x)
-        # x = self.lin2(x)
-        # x = self.lin3(x)
+        x = self.lin2(x)
+        x = self.lin3(x)
         x = self.sm(x)
         return x
 
@@ -82,7 +90,6 @@ class HexModel(Model):
         self.preprocess(x)
         x = tensor(x[0], dtype=torch.float), tensor([x[1]], dtype=torch.float)
         x = self(x)
-        x = self.sm(x)
         x = x.detach().numpy()
         # actions = [self.index_to_action[i] for i in range(len(x))]
         # sorted_actions = [x for _, x in sorted(zip(x, actions), key=lambda pair: pair[0], reverse=True)]
