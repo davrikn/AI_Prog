@@ -10,7 +10,7 @@ log_level: int = logging.INFO
 
 # MCTS parameters
 num_episodes = 200
-num_rollouts = 1000
+num_rollouts = 100
 decay_rate = 1
 epsilon = 0.3
 deepflush = False

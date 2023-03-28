@@ -119,7 +119,12 @@ class MonteCarlo:
         return self.get_most_visited_edge()
 
     def get_most_visited_edge(self) -> MonteCarloNode:
-        return sorted(self.root.children, reverse=True, key=lambda child: child.visits)[0]
+        highest_visit_count = sorted(self.root.children, reverse=True, key=lambda child: child.visits)[0].visits
+        most_visited_edges = [self.root.children[i] for i in range(len(self.root.children))
+                              if self.root.children[i].visits == highest_visit_count]
+
+        return random.choice(most_visited_edges)
+        # return sorted(self.root.children, reverse=True, key=lambda child: child.visits)[0]
 
     def tree_search(self):
         """
@@ -141,6 +146,7 @@ class MonteCarlo:
             return self.rollout(random.choice(children))
         else:
             actions = self.model.classify(node.state.state(deNested=True))
+            actions = [action[0] for action in actions]
             for action in actions:
                 try:
                     child = node.state.apply(action, deepcopy=True)
