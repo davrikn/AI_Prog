@@ -29,7 +29,8 @@ class HexAgent:
         return state
 
     def perform_move_greedy(self, state: HexWorld) -> HexWorld:
-        actions = self.model.classify(state.state(deNested=True))
+        action_probabilities = self.model.classify(state.state(deNested=True))
+        actions = [action[0] for action in action_probabilities]
 
         # actions.reverse()
         illegal_moves = 0

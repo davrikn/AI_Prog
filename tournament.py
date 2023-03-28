@@ -8,7 +8,7 @@ from hex.hexWorld import HexWorld
 
 class Tournament:
 
-    def __init__(self, agents: list[HexAgent], UI: bool, G=100):
+    def __init__(self, agents: list[HexAgent], UI: bool, G=25):
         self.agents = agents
         self.G = G
         self.M = len(agents)
@@ -55,14 +55,14 @@ class Tournament:
         winning_agent = 0
         while not finished:
             if agents_turn == 1:
-                # game = agent1.perform_move_greedy(game)
-                game = agent1.perform_move_probabilistic(game)
+                game = agent1.perform_move_greedy(game)
+                # game = agent1.perform_move_probabilistic(game)
                 finished = game.is_final_state()
                 if finished:
                     winning_agent = agents_turn
             elif agents_turn == 2:
-                # game = agent2.perform_move_greedy(game)
-                game = agent2.perform_move_probabilistic(game)
+                game = agent2.perform_move_greedy(game)
+                # game = agent2.perform_move_probabilistic(game)
                 finished = game.is_final_state()
                 if finished:
                     winning_agent = agents_turn

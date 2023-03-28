@@ -1,6 +1,7 @@
 import sys
 
 import configs
+from hex.hexAgent import HexAgent
 from nim.NimWorld import NimSimWorld
 from nim.nimUI import NimUI
 from nim.nimModel import NimModel
@@ -64,6 +65,7 @@ def main():
             logger.debug(f"Total number of turns: {turns}")
     logger.info("Exiting")
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
