@@ -35,6 +35,9 @@ class HexModel(Model):
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
+        self.action_to_index_transpose = self.gen_action_index_dict_transpose()
+        self.index_to_action_transpose = {v: k for k, v in self.action_to_index_transpose.items()}
+
 
         self.optimizer = torch.optim.SGD(self.parameters(), lr=configs.learning_rate, momentum=0)
 
@@ -63,11 +66,24 @@ class HexModel(Model):
                 k += 1
         return action_to_index
 
+    def gen_action_index_dict_transpose(self):
+        action_to_index_transpose = dict()
+        k = 0
+        for i in range(self.size):
+            for j in range(self.size):
+                action = self.pad(j) + self.pad(i)
+                action_to_index_transpose[action] = k
+                k += 1
+        return action_to_index_transpose
+
     def preprocess(self, x: tuple[np.ndarray, int]) -> None:
         if x[1] == -1:
             temp = copy.deepcopy(x[0][0])
             x[0][0] = x[0][1]
             x[0][1] = temp
+            x[0][0] = x[0][0].transpose()
+            x[0][1] = x[0][1].transpose()
+
 
     def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
         x = self.conv1(x[0])
@@ -87,12 +103,28 @@ class HexModel(Model):
 
     # TODO: DEBUG THIS!!!!!
     def classify(self, x: tuple[np.ndarray, int]) -> list[tuple[str, float]]:
+        _player = x[1]
         self.preprocess(x)
         x = tensor(x[0], dtype=torch.float), tensor([x[1]], dtype=torch.float)
         x = self(x)
-        x = x.detach().numpy()
-        actions = [(self.index_to_action[idx], action) for idx, action in enumerate(x)]
+        actions = None
+        if _player == -1:
+            x = self.transpose_actions(x)
+            x = x.detach().numpy()
+            actions = [(self.index_to_action_transpose[idx], probability) for idx, probability in enumerate(x)]
+        else:
+            x = x.detach().numpy()
+            actions = [(self.index_to_action[idx], probability) for idx, probability in enumerate(x)]
         # sorted_actions = [x for _, x in sorted(zip(x, actions), key=lambda pair: pair[0], reverse=True)]
         # return list(map(lambda x: self.index_to_action[x], np.argsort(x)))
         # return sorted_actions
         return sorted(actions, key=lambda tup: tup[1])
+
+    def transpose_actions(self, x):
+        x = x.view(configs.size, configs.size)
+        x = x.detach().numpy()
+        x = x.transpose()
+        x = x.flatten()
+
+        return torch.tensor(x, dtype=torch.float, requires_grad=True)
+

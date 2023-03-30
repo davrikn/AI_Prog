@@ -18,10 +18,14 @@ agent150 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_d
 agent200 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_5_checkpoint_200.pt")
                     , name="Checkpoint200Agent")
 
-tournament = Tournament([agent0, agent50, agent100, agent150, agent200], UI=False)
+test50 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/50.pt"), name="50")
+test300 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/300.pt"), name="300")
+
+# tournament = Tournament([agent0, agent50, agent100, agent150, agent200], UI=False)
+tournament = Tournament([test50, test300], G=250, UI=False)
 
 
-# tournament.run_tournament()
+tournament.run_tournament()
 
 # TODO: Delete, just testing
 def agent_vs_mcts():
@@ -46,4 +50,4 @@ def agent_vs_mcts():
     print(f'agent wins: {agent0.wins}, agent losses: {agent0.losses}')
 
 
-agent_vs_mcts()
+# agent_vs_mcts()

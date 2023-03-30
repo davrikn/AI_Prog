@@ -12,7 +12,7 @@ log_level: int = logging.INFO
 num_episodes = 200
 num_rollouts = 500
 decay_rate = 1
-epsilon = 0.3
+epsilon = 0.15
 deepflush = False
 
 # ANET parameters
