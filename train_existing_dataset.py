@@ -1,4 +1,5 @@
 import ast
+import random
 from _csv import reader
 import re
 import numpy as np
@@ -10,7 +11,8 @@ from hex.hexModel import HexModel
 def train_model():
     model = HexModel(configs.size, snapshotdir=None)
     data = load_train_data()
-    batch_size = 50
+    random.shuffle(data)
+    batch_size = 25
     for i in range(0, len(data), batch_size):
         model.append_rbuf(data[i:i+batch_size])
         if i % batch_size == 0:
@@ -19,8 +21,6 @@ def train_model():
             model.save_model(file_name=f'{i}')
 
     print(data)
-
-
 
 
 def load_train_data():

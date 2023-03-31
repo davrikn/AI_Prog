@@ -101,7 +101,6 @@ class HexModel(Model):
         x = self.sm(x)
         return x
 
-    # TODO: DEBUG THIS!!!!!
     def classify(self, x: tuple[np.ndarray, int]) -> list[tuple[str, float]]:
         _player = x[1]
         self.preprocess(x)

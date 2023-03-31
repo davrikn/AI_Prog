@@ -26,6 +26,7 @@ class HexAgent:
             except:
                 illegal_moves += 1
                 pass
+        # print(illegal_moves)
         return state
 
     def perform_move_greedy(self, state: HexWorld) -> HexWorld:
