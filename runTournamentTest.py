@@ -26,7 +26,7 @@ test200 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_di
 test300 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/300.pt"), name="300")
 
 # tournament = Tournament([agent0, agent50, agent100, agent150, agent200], UI=False)
-tournament = Tournament([test0, test50, test100, test150, test200, test300], G=250, UI=False)
+tournament = Tournament([test0, test50, test100, test150, test200, test300], G=25, UI=False)
 
 
 tournament.run_tournament()

@@ -60,13 +60,13 @@ class Tournament:
                 game = agent1.perform_move_probabilistic(game)
                 finished = game.is_final_state()
                 if finished:
-                    winning_agent = agents_turn
+                    winning_agent = agent1.name
             elif agents_turn == 2:
                 # game = agent2.perform_move_greedy(game)
                 game = agent2.perform_move_probabilistic(game)
                 finished = game.is_final_state()
                 if finished:
-                    winning_agent = agents_turn
+                    winning_agent = agent2.name
             agents_turn = 2 if agents_turn == 1 else 1
             if configs.display_UI:
                 time.sleep(1)

@@ -4,7 +4,7 @@ from hex.hexAgent import HexAgent
 from ActorClient import ActorClient
 from hex.hexModel import HexModel
 
-actor = HexAgent(model=HexModel(boardsize=configs.size,
+actor = HexAgent(model=HexModel(boardsize=configs.OHT_size,
                                 snapshotdir=configs.model_dir + 'hex_size_7_checkpoint_0.pt'), name="OHT")
 
 
@@ -24,5 +24,5 @@ class MyClient(ActorClient):
 
 # Initialize and run your overridden client when the script is executed
 if __name__ == '__main__':
-    client = MyClient(auth='<your token>', qualify=False)
+    client = MyClient(auth='', qualify=False)
     client.run()
