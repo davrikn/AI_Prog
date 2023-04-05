@@ -21,6 +21,7 @@ class HexWorld(Game):
     def __init__(self, size: int = configs.size):
         super(HexWorld, self).__init__(size=size)
         self.size = size
+        self.board = []
         self.__init_state()
 
     def get_children_states(self) -> list[(str, HexWorld)]:

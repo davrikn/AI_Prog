@@ -1,5 +1,6 @@
 import itertools
 import random
+import time
 
 import configs
 from hex.hexAgent import HexAgent
@@ -67,9 +68,12 @@ class Tournament:
                 if finished:
                     winning_agent = agents_turn
             agents_turn = 2 if agents_turn == 1 else 1
-            if self.UI:
-                pass
-        # print(f'{game}\n')
+            if configs.display_UI:
+                time.sleep(1)
+                print(f'{game}\n')
+        if configs.display_UI:
+            print(f'Agent {winning_agent} won')
+            print('---------------------------------')
         return winning_agent
 
     def create_match_ups(self):
