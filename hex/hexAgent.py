@@ -14,9 +14,20 @@ class HexAgent:
         self.losses = 0
 
     def perform_move_probabilistic(self, state: HexWorld) -> HexWorld:
+        def remove_invalid_moves(action_dist, state: HexWorld):
+            valid_actions = state.get_possible_actions()
+            for idx, action in enumerate(action_dist):
+                if action[0] not in valid_actions:
+                    action_dist.remove(action)
+
         actions_probabilities = self.model.classify(state.state(deNested=True))
+        remove_invalid_moves(actions_probabilities, state)
         actions = [action[0] for action in actions_probabilities]
         weights = [action[1] for action in actions_probabilities]
+        # min_val = min(weights)
+        # if min_val < 0:
+        #     weights = [(x + abs(min_val) + 1)**3 for x in weights]
+
 
         # actions.reverse()
         illegal_moves = 0
@@ -28,12 +39,14 @@ class HexAgent:
             except:
                 illegal_moves += 1
                 pass
-        # print(illegal_moves)
+
         return state
 
     def perform_move_greedy(self, state: HexWorld) -> HexWorld:
         action_probabilities = self.model.classify(state.state(deNested=True))
         actions = [action[0] for action in action_probabilities]
+        # if state.player == -1:
+        #     actions.reverse()
 
         # actions.reverse()
         illegal_moves = 0
@@ -44,7 +57,26 @@ class HexAgent:
             except:
                 illegal_moves += 1
                 pass
-        # print(illegal_moves)
+        if illegal_moves == len(action_probabilities):
+            raise Exception
+        return state
+
+    def perform_move_random(self, state: HexWorld) -> HexWorld:
+        action_probabilities = self.model.classify(state.state(deNested=True))
+        actions = [action[0] for action in action_probabilities]
+        random.shuffle(actions)
+
+        # actions.reverse()
+        illegal_moves = 0
+        for action in actions:
+            try:
+                state.apply(action)
+                break
+            except:
+                illegal_moves += 1
+                pass
+        if illegal_moves == len(action_probabilities):
+            raise Exception
         return state
 
     def get_action(self, state: list[int], player_to_move: int) -> tuple[int, int]:
@@ -72,6 +104,7 @@ class HexAgent:
         for move in actions_tuples:
             if full_board[move[0]][move[1]] == 0:
                 return move
+
 
 
 

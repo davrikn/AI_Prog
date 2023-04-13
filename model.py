@@ -16,10 +16,12 @@ logger = logging.getLogger()
 class Model(nn.Module):
     rbuf: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]] = []
     name = 'model'
-    crit = nn.CrossEntropyLoss()
+    # crit = nn.CrossEntropyLoss()
+    LOSS_FUNCTION = configs.loss_function
     action_to_index: dict[str, int]
     index_to_action: dict[int, str]
-    optimizer: torch.optim.Optimizer
+    # optimizer: torch.optim.Optimizer
+    optimizer: configs.optimizer
 
     def __init__(self, size: int, classes: int, snapshotdir: os.PathLike):
         super().__init__()
@@ -32,7 +34,7 @@ class Model(nn.Module):
         pass
 
     @abstractmethod
-    def transpose_actions(self, x: tuple[np.ndarray, int]) -> torch.Tensor:
+    def transpose_actions(self, x: torch.Tensor, k) -> torch.Tensor:
         pass
 
     @abstractmethod
@@ -50,7 +52,7 @@ class Model(nn.Module):
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
         for x in X:
             self.preprocess(x[0])
-        epochs = 10
+        epochs = 3
         for epoch in range(epochs):
             for i, (_x, _y) in enumerate(X, 1):
                 if i % 100 == 0:
@@ -59,17 +61,21 @@ class Model(nn.Module):
                 y = np.zeros(self.classes)
                 for k, v in _y:
                     y[self.action_to_index[k]] = v
-                y = torch.tensor(y, dtype=torch.float)
+                y = torch.tensor(y, dtype=torch.float, requires_grad=True)
                 x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True), torch.tensor([_x[1]], dtype=torch.float)
                 x = self(x)
                 if _x[1] == -1:
-                    x = self.transpose_actions(x)
+                    y = self.transpose_actions(y, k=-1)
 
-                x = self.remove_invalid_moves(x, y)
+                # x = self.remove_invalid_moves(x, y)
 
-                loss = self.crit(x, y)
+                a = list(self.parameters())[0].clone()
+                loss = self.LOSS_FUNCTION(x, y)
                 loss.backward()
                 self.optimizer.step()
+                b = list(self.parameters())[0].clone()
+                print(torch.equal(a.data, b.data))
+
 
     def append_rbuf(self, data: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
         self.rbuf.extend(data)
@@ -79,7 +85,8 @@ class Model(nn.Module):
 
     def flush_rbuf(self):
         random.shuffle(self.rbuf)
-        # utils.save_train_data(self.rbuf)
+        if configs.save_data:
+            utils.save_train_data(self.rbuf)
 
         self.train_batch(self.rbuf)
         logging.info("Training batch")
@@ -99,7 +106,7 @@ class Model(nn.Module):
                 x2[idx] = 0
         scaled_x_only_valid = x2.numpy() / np.sum(x2.numpy())
         for idx, scaled_x in enumerate(scaled_x_only_valid):
-            x2[idx] = float(scaled_x)
+            x[idx] = float(scaled_x)
 
         return torch.tensor(x2.numpy(), dtype=torch.float, requires_grad=True)
 

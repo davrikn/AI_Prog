@@ -21,14 +21,10 @@ class HexModel(Model):
         self.conv2 = nn.Conv2d(20, 20, 3, 1, 1)
         self.conv3 = nn.Conv2d(20, 20, 3, 1, 1)
         self.conv4 = nn.Conv2d(20, 20, 3, 1, 1)
-        self.conv5 = nn.Conv2d(20, 20, 3, 1, 1)
+        # self.conv5 = nn.Conv2d(20, 20, 3, 1, 1)
         # self.lin1 = nn.Linear(8 * boardsize * boardsize, 32)
-        self.lin1 = nn.Linear(20 * boardsize * boardsize, 256)
-        self.lin2 = nn.Linear(256, 128)
-        self.lin3 = nn.Linear(128, boardsize * boardsize)
-        # self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
-        # self.conv2 = nn.Conv2d(32, 64, 3, 1, 1)
-        # self.conv3 = nn.Conv2d(64, 128, 3, 1, 1)
+        self.lin1 = nn.Linear(20 * boardsize * boardsize, 64)
+        self.lin2 = nn.Linear(64, boardsize * boardsize)
         # self.lin1 = nn.Linear(128*boardsize*boardsize, 512)
         # self.lin2 = nn.Linear(512, 256)
         # self.lin3 = nn.Linear(256, boardsize*boardsize)
@@ -38,8 +34,7 @@ class HexModel(Model):
         self.action_to_index_transpose = self.gen_action_index_dict_transpose()
         self.index_to_action_transpose = {v: k for k, v in self.action_to_index_transpose.items()}
 
-
-        self.optimizer = torch.optim.SGD(self.parameters(), lr=configs.learning_rate, momentum=0)
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=configs.learning_rate)
 
         if isfile(f"{snapshotdir}"):
             logger.info("Loading statedict")
@@ -81,8 +76,8 @@ class HexModel(Model):
             temp = copy.deepcopy(x[0][0])
             x[0][0] = x[0][1]
             x[0][1] = temp
-            x[0][0] = x[0][0].transpose()
-            x[0][1] = x[0][1].transpose()
+            x[0][0] = np.rot90(x[0][0], k=-1)
+            x[0][1] = np.rot90(x[0][1], k=-1)
 
 
     def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
@@ -91,13 +86,12 @@ class HexModel(Model):
         x = self.conv2(x)
         x = self.conv3(x)
         x = self.conv4(x)
-        x = self.conv5(x)
+        # x = self.conv5(x)
         # x = self.mp2(x)
-        # x = self.conv3(x)
         x = x.view(-1)
         x = self.lin1(x)
         x = self.lin2(x)
-        x = self.lin3(x)
+        # x = self.lin3(x)
         x = self.sm(x)
         return x
 
@@ -106,24 +100,25 @@ class HexModel(Model):
         self.preprocess(x)
         x = tensor(x[0], dtype=torch.float), tensor([x[1]], dtype=torch.float)
         x = self(x)
-        actions = None
         if _player == -1:
             x = self.transpose_actions(x)
-            x = x.detach().numpy()
-            actions = [(self.index_to_action_transpose[idx], probability) for idx, probability in enumerate(x)]
-        else:
-            x = x.detach().numpy()
-            actions = [(self.index_to_action[idx], probability) for idx, probability in enumerate(x)]
+            # x = x.detach().numpy()
+            # actions = [(self.index_to_action_transpose[idx], probability) for idx, probability in enumerate(x)]
+
+        x = x.detach().numpy()
+        actions = [(self.index_to_action[idx], probability) for idx, probability in enumerate(x)]
         # sorted_actions = [x for _, x in sorted(zip(x, actions), key=lambda pair: pair[0], reverse=True)]
         # return list(map(lambda x: self.index_to_action[x], np.argsort(x)))
         # return sorted_actions
         return sorted(actions, key=lambda tup: tup[1])
 
-    def transpose_actions(self, x):
+    def transpose_actions(self, x, k=1):
         x = x.view(configs.size, configs.size)
         x = x.detach().numpy()
-        x = x.transpose()
+        x = np.rot90(x, k)
         x = x.flatten()
 
         return torch.tensor(x, dtype=torch.float, requires_grad=True)
+
+
 
