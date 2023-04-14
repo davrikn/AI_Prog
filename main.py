@@ -20,6 +20,7 @@ logging.basicConfig(format="%(levelname)s %(asctime)s: %(message)s")
 logger = logging.getLogger()
 logger.setLevel(configs.log_level)
 
+
 def main():
     get_game: Callable[[], Game] = lambda: None
     get_ui: Callable[[], HexUI or NimUI] = lambda: None

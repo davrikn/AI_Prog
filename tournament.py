@@ -53,20 +53,23 @@ class Tournament:
         game = HexWorld(size=configs.size)
         finished = False
         agents_turn = starting_player
-        winning_agent = 0
+        winning_agent_name = 0
+        winning_agent_id = 0
         while not finished:
             if agents_turn == 1:
                 # game = agent1.perform_move_greedy(game)
                 game = agent1.perform_move_probabilistic(game)
                 finished = game.is_final_state()
                 if finished:
-                    winning_agent = agents_turn
+                    winning_agent = agent1.name
+                    winning_agent_id = agents_turn
             elif agents_turn == 2:
                 # game = agent2.perform_move_greedy(game)
                 game = agent2.perform_move_probabilistic(game)
                 finished = game.is_final_state()
                 if finished:
-                    winning_agent = agents_turn
+                    winning_agent = agent2.name
+                    winning_agent_id = agents_turn
             agents_turn = 2 if agents_turn == 1 else 1
             if configs.display_UI:
                 time.sleep(1)
@@ -74,7 +77,7 @@ class Tournament:
         if configs.display_UI:
             print(f'Agent {winning_agent} won')
             print('---------------------------------')
-        return winning_agent
+        return winning_agent_id
 
     def create_match_ups(self):
         matches = self.unique_combinations()
