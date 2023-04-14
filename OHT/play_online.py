@@ -4,7 +4,7 @@ from hex.hexAgent import HexAgent
 from ActorClient import ActorClient
 from hex.hexModel import HexModel
 
-actor = HexAgent(model=HexModel(boardsize=configs.size,
+actor = HexAgent(model=HexModel(boardsize=7,
                                 snapshotdir=configs.model_dir + 'hex_size_7_checkpoint_0.pt'), name="OHT")
 
 
