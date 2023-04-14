@@ -113,7 +113,7 @@ class HexModel(Model):
         return sorted(actions, key=lambda tup: tup[1])
 
     def transpose_actions(self, x, k=1):
-        x = x.view(configs.size, configs.size)
+        x = x.view(self.size, self.size)
         x = x.detach().numpy()
         x = np.rot90(x, k)
         x = x.flatten()
