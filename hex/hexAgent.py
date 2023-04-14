@@ -1,5 +1,7 @@
+import math
 import random
 import numpy as np
+import torch
 
 import configs
 from hex.hexWorld import HexWorld
@@ -23,7 +25,11 @@ class HexAgent:
         actions_probabilities = self.model.classify(state.state(deNested=True))
         remove_invalid_moves(actions_probabilities, state)
         actions = [action[0] for action in actions_probabilities]
-        weights = [action[1] for action in actions_probabilities]
+        weights = [action[1]**(1/4) for action in actions_probabilities]
+        print("pre", weights)
+        weights = self.model.sm(torch.tensor(weights, dtype=torch.float)).numpy()
+        print("post", weights)
+        print("------------------------------------------------------------")
         # min_val = min(weights)
         # if min_val < 0:
         #     weights = [(x + abs(min_val) + 1)**3 for x in weights]

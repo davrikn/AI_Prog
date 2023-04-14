@@ -19,15 +19,15 @@ class HexModel(Model):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
         self.n1_conv1 = nn.Conv2d(2, 32, 3, 1, 1)
         self.n1_conv2 = nn.Conv2d(32, 64, 3, 1, 1)
-        self.n1_lin1 = nn.Linear(boardsize**2*2, boardsize**3)
-        self.n1_lin2 = nn.Linear(boardsize**3, boardsize**4)
-        self.n1_lin3 = nn.Linear(boardsize**4, boardsize * boardsize)
+        self.n1_lin1 = nn.Linear(boardsize**2*2, boardsize**2)
+        self.n1_lin2 = nn.Linear(boardsize**2, boardsize**2)
+        self.n1_lin3 = nn.Linear(boardsize**3, boardsize * boardsize)
 
         self.n2_conv1 = nn.Conv2d(2, 32, 3, 1, 1)
         self.n2_conv2 = nn.Conv2d(32, 64, 3, 1, 1)
-        self.n2_lin1 = nn.Linear(boardsize**2*2, boardsize**3)
-        self.n2_lin2 = nn.Linear(boardsize**3, boardsize**4)
-        self.n2_lin3 = nn.Linear(boardsize**4, boardsize * boardsize)
+        self.n2_lin1 = nn.Linear(boardsize**2*2, boardsize**2)
+        self.n2_lin2 = nn.Linear(boardsize**2, boardsize**2)
+        self.n2_lin3 = nn.Linear(boardsize**3, boardsize * boardsize)
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
@@ -82,16 +82,16 @@ class HexModel(Model):
             x = x[0].view(-1)
             x = self.n1_lin1(x)
             x = self.n1_lin2(x)
-            x = self.n1_lin3(x)
-            return x
+            #x = self.n1_lin3(x)
+            return self.sm(x)
         else:
             #x = self.n2_conv1(x[0])
             #x = self.n2_conv2(x)
             x = x[0].view(-1)
             x = self.n2_lin1(x)
             x = self.n2_lin2(x)
-            x = self.n2_lin3(x)
-            return x
+            #x = self.n2_lin3(x)
+            return self.sm(x)
 
     def classify(self, x: tuple[np.ndarray, int]) -> list[tuple[str, float]]:
         _player = x[1]
