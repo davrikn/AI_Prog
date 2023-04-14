@@ -34,6 +34,10 @@ class HexAgent:
         found_legal_move = False
         while not found_legal_move:
             try:
+                if illegal_moves >= len(actions):
+                    action = random.choices(list(self.model.action_to_index.keys()))[0]
+                    state.apply(action)
+                    found_legal_move = True
                 state.apply(random.choices(actions, weights=weights, k=1)[0])
                 found_legal_move = True
             except:

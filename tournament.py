@@ -23,7 +23,9 @@ class Tournament:
 
         matches = self.create_match_ups()
         random.shuffle(matches)
-        for match_up in matches:
+        for i, match_up in enumerate(matches):
+            if i % 10 == 0:
+                print(f"Match: {i}")
             self.play_out_series(match_up[0], match_up[1])
         self.print_final_scoreboard()
 

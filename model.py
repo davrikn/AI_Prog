@@ -64,10 +64,6 @@ class Model(nn.Module):
                 y = torch.tensor(y, dtype=torch.float, requires_grad=True)
                 x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True), torch.tensor([_x[1]], dtype=torch.float)
                 x = self(x)
-                if _x[1] == -1:
-                    y = self.transpose_actions(y, k=-1)
-
-                # x = self.remove_invalid_moves(x, y)
 
                 a = list(self.parameters())[0].clone()
                 loss = self.LOSS_FUNCTION(x, y)
