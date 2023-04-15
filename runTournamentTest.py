@@ -20,7 +20,7 @@ print(list(test150.model.parameters()))
 print(list(test200.model.parameters()))
 
 # tournament = Tournament([agent0, agent50, agent100, agent150, agent200], UI=False)
-tournament = Tournament([test0, test50, test100, test150, test200], G=150, UI=True)
+tournament = Tournament([test0, test50, test100, test150, test200], G=99, UI=True)
 
 
 tournament.run_tournament()

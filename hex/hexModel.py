@@ -8,6 +8,8 @@ from os.path import isfile
 import os
 import torch
 from logging import getLogger
+import torch.nn.functional as F
+
 
 logger = getLogger()
 
@@ -15,20 +17,18 @@ logger = getLogger()
 class HexModel(Model):
     name = 'hex_v2'
 
-    def __init__(self, boardsize: int, snapshotdir: os.PathLike):
+    def __init__(self, boardsize: int, snapshotdir: os.PathLike = '/'):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
-        self.n1_conv1 = nn.Conv2d(2, 32, 3, 1, 1)
-        self.n1_lin1 = nn.Linear(boardsize**2*32, 2048)
-        self.n1_lin2 = nn.Linear(2048, boardsize * boardsize)
-        self.n2_conv1 = nn.Conv2d(2, 32, 3, 1, 1)
-        self.n2_lin1 = nn.Linear(boardsize**2*32, 2048)
-        self.n2_lin2 = nn.Linear(2048, boardsize * boardsize)
+        self.lin1 = nn.Linear(boardsize**2*2, 64)
+        self.lin2 = nn.Linear(64, 128)
+        self.lin3 = nn.Linear(128, boardsize * boardsize)
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
         self.action_to_index_transpose = self.gen_action_index_dict_transpose()
         self.index_to_action_transpose = {v: k for k, v in self.action_to_index_transpose.items()}
 
+        self.crit = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.parameters(), lr=configs.learning_rate)
 
         if isfile(f"{snapshotdir}"):
@@ -66,55 +66,76 @@ class HexModel(Model):
                 k += 1
         return action_to_index_transpose
 
-    def preprocess(self, x: tuple[np.ndarray, int]) -> None:
-        pass
+    def transform(self, x: np.ndarray) -> np.ndarray:
+        _x1 = x[1].copy()
+        x[1] = x[0]
+        x[0] = _x1
 
+        x[0] = np.rot90(x[0], -1)
+        x[1] = np.rot90(x[1], -1)
+        return x
 
-    def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
-        if x[1] == 1:
-            x = self.n1_conv1(x[0])
-            x = x.view(-1)
-            x = self.n1_lin1(x)
-            x = self.n1_lin2(x)
-        else:
-            x = self.n2_conv1(x[0])
-            x = x.view(-1)
-            x = self.n2_lin1(x)
-            x = self.n2_lin2(x)
+    def transform_target(self, x: np.ndarray) -> np.ndarray:
+        x = np.reshape(x, (self.size, self.size))
+        x = np.rot90(x, -1)
+        return x.flatten()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = x.view(-1)
+        x = F.relu(self.lin1(x))
+        x = F.relu(self.lin2(x))
+        x = F.relu(self.lin3(x))
+        x = self.sm(x)
         return x
 
     def classify(self, x: tuple[np.ndarray, int]) -> list[tuple[str, float]]:
-        _player = x[1]
-        self.preprocess(x)
-        x = tensor(x[0], dtype=torch.float), tensor([x[1]], dtype=torch.float)
-        x = self(x)
-
-        x = x.detach().numpy()
-        actions = [(self.index_to_action[idx], probability) for idx, probability in enumerate(x)]
-        return sorted(actions, key=lambda tup: tup[1])
+        with torch.no_grad():
+            p = x[1]
+            x = x[0]
+            if p == -1:
+                x = self.transform(x)
+            x = tensor(x, dtype=torch.float)
+            x = self(x).numpy()
+            if p == -1:
+                x = self.transform_target(x)
+            actions = [(self.index_to_action[idx], probability) for idx, probability in enumerate(x)]
+            return sorted(actions, key=lambda tup: tup[1])
 
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
-        for x in X:
-            self.preprocess(x[0])
-        epochs = 3
-        weights_pre = [x.clone() for x in self.parameters()]
-        for epoch in range(epochs):
-            for i, (_x, _y) in enumerate(X, 1):
-                if i % 100 == 0:
-                    logger.debug(f"Trained on {i} samples")
-                self.optimizer.zero_grad()
-                y = np.zeros(self.classes)
-                for k, v in _y:
-                    y[self.action_to_index[k]] = v
-                y = torch.tensor(y, dtype=torch.float, requires_grad=True)
-                x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True), torch.tensor([_x[1]], dtype=torch.float)
-                x = self(x)
+        optimizer = torch.optim.Adam(self.parameters(), lr=0.01)
 
-                loss = self.LOSS_FUNCTION(x, y)
-                loss.backward()
-                self.optimizer.step()
-        if False not in [torch.equal(weights_pre[i], list(self.parameters())[i]) for i in range(len(weights_pre))]:
-            print("Weights unchanged")
-        else:
-            pass
-            #print(weights_pre[0] - list(self.parameters())[0])
+        print(f"Batch len: {len(X)}")
+        for x, _y in X:
+
+            p = x[1]
+
+            if p == -1:
+                continue
+
+            x = x[0]
+
+            y = np.zeros(self.classes)
+            for k, v in _y:
+                y[self.action_to_index[k]] = v
+
+            if p == -1:
+                x = self.transform(x)
+                y = self.transform_target(y)
+
+            y = tensor(y, dtype=torch.float, requires_grad=False)
+            x = tensor(x, dtype=torch.float, requires_grad=True)
+
+
+            optimizer.zero_grad()
+            out = self(x)
+            print(f"\n\nY:{y}\nX:{x}\nOut:{out}")
+
+            loss = self.crit(out, y)
+            loss.backward()
+            optimizer.step()
+
+
+if __name__ == "__main__":
+    model = HexModel(2)
+    c = model.classify((np.array([[[1,0],[0,0]],[[0,1],[0,0]]]), 1))
+    print(c)

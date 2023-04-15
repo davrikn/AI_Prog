@@ -16,8 +16,7 @@ logger = logging.getLogger()
 class Model(nn.Module):
     rbuf: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]] = []
     name = 'model'
-    # crit = nn.CrossEntropyLoss()
-    LOSS_FUNCTION = configs.loss_function
+    crit = nn.CrossEntropyLoss()
     action_to_index: dict[str, int]
     index_to_action: dict[int, str]
     # optimizer: torch.optim.Optimizer
@@ -33,10 +32,6 @@ class Model(nn.Module):
         pass
 
     @abstractmethod
-    def transpose_actions(self, x: torch.Tensor, k) -> torch.Tensor:
-        pass
-
-    @abstractmethod
     def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
         pass
 
@@ -48,31 +43,9 @@ class Model(nn.Module):
     def gen_action_to_index(self) -> dict[str, int]:
         pass
 
+    @abstractmethod
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
-        for x in X:
-            self.preprocess(x[0])
-        epochs = 3
-        weights_pre = [x.clone() for x in self.parameters()]
-        for epoch in range(epochs):
-            for i, (_x, _y) in enumerate(X, 1):
-                if i % 100 == 0:
-                    logger.debug(f"Trained on {i} samples")
-                self.optimizer.zero_grad()
-                y = np.zeros(self.classes)
-                for k, v in _y:
-                    y[self.action_to_index[k]] = v
-                y = torch.tensor(y, dtype=torch.float, requires_grad=True)
-                x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True), torch.tensor([_x[1]], dtype=torch.float)
-                x = self(x)
-
-                loss = self.LOSS_FUNCTION(x, y)
-                loss.backward()
-                self.optimizer.step()
-        if False not in [torch.equal(weights_pre[i], list(self.parameters())[i]) for i in range(len(weights_pre))]:
-            print("Weights unchanged")
-        else:
-            pass
-            #print(weights_pre[0] - list(self.parameters())[0])
+        pass
 
     def append_rbuf(self, data: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
         self.rbuf.extend(data)
