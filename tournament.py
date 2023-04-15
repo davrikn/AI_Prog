@@ -57,15 +57,15 @@ class Tournament:
         winning_agent_id = 0
         while not finished:
             if agents_turn == 1:
-                # game = agent1.perform_move_greedy(game)
-                game = agent1.perform_move_probabilistic(game)
+                game = agent1.perform_move_greedy(game)
+                # game = agent1.perform_move_probabilistic(game)
                 finished = game.is_final_state()
                 if finished:
                     winning_agent = agent1.name
                     winning_agent_id = agents_turn
             elif agents_turn == 2:
-                # game = agent2.perform_move_greedy(game)
-                game = agent2.perform_move_probabilistic(game)
+                game = agent2.perform_move_greedy(game)
+                # game = agent2.perform_move_probabilistic(game)
                 finished = game.is_final_state()
                 if finished:
                     winning_agent = agent2.name

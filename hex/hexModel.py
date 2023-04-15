@@ -17,17 +17,12 @@ class HexModel(Model):
 
     def __init__(self, boardsize: int, snapshotdir: os.PathLike):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
-        self.conv1 = nn.Conv2d(2, 20, 3, 1, 1)
-        self.conv2 = nn.Conv2d(20, 20, 3, 1, 1)
-        self.conv3 = nn.Conv2d(20, 20, 3, 1, 1)
-        self.conv4 = nn.Conv2d(20, 20, 3, 1, 1)
-        # self.conv5 = nn.Conv2d(20, 20, 3, 1, 1)
-        # self.lin1 = nn.Linear(8 * boardsize * boardsize, 32)
-        self.lin1 = nn.Linear(20 * boardsize * boardsize, 64)
-        self.lin2 = nn.Linear(64, boardsize * boardsize)
-        # self.lin1 = nn.Linear(128*boardsize*boardsize, 512)
-        # self.lin2 = nn.Linear(512, 256)
-        # self.lin3 = nn.Linear(256, boardsize*boardsize)
+        self.n1_conv1 = nn.Conv2d(2, 32, 3, 1, 1)
+        self.n1_lin1 = nn.Linear(boardsize**2*32, 2048)
+        self.n1_lin2 = nn.Linear(2048, boardsize * boardsize)
+        self.n2_conv1 = nn.Conv2d(2, 32, 3, 1, 1)
+        self.n2_lin1 = nn.Linear(boardsize**2*32, 2048)
+        self.n2_lin2 = nn.Linear(2048, boardsize * boardsize)
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
@@ -72,27 +67,20 @@ class HexModel(Model):
         return action_to_index_transpose
 
     def preprocess(self, x: tuple[np.ndarray, int]) -> None:
-        if x[1] == -1:
-            temp = copy.deepcopy(x[0][0])
-            x[0][0] = x[0][1]
-            x[0][1] = temp
-            x[0][0] = np.rot90(x[0][0], k=-1)
-            x[0][1] = np.rot90(x[0][1], k=-1)
+        pass
 
 
     def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
-        x = self.conv1(x[0])
-        # x = self.mp1(x)
-        x = self.conv2(x)
-        x = self.conv3(x)
-        x = self.conv4(x)
-        # x = self.conv5(x)
-        # x = self.mp2(x)
-        x = x.view(-1)
-        x = self.lin1(x)
-        x = self.lin2(x)
-        # x = self.lin3(x)
-        x = self.sm(x)
+        if x[1] == 1:
+            x = self.n1_conv1(x[0])
+            x = x.view(-1)
+            x = self.n1_lin1(x)
+            x = self.n1_lin2(x)
+        else:
+            x = self.n2_conv1(x[0])
+            x = x.view(-1)
+            x = self.n2_lin1(x)
+            x = self.n2_lin2(x)
         return x
 
     def classify(self, x: tuple[np.ndarray, int]) -> list[tuple[str, float]]:
@@ -100,25 +88,33 @@ class HexModel(Model):
         self.preprocess(x)
         x = tensor(x[0], dtype=torch.float), tensor([x[1]], dtype=torch.float)
         x = self(x)
-        if _player == -1:
-            x = self.transpose_actions(x)
-            # x = x.detach().numpy()
-            # actions = [(self.index_to_action_transpose[idx], probability) for idx, probability in enumerate(x)]
 
         x = x.detach().numpy()
         actions = [(self.index_to_action[idx], probability) for idx, probability in enumerate(x)]
-        # sorted_actions = [x for _, x in sorted(zip(x, actions), key=lambda pair: pair[0], reverse=True)]
-        # return list(map(lambda x: self.index_to_action[x], np.argsort(x)))
-        # return sorted_actions
         return sorted(actions, key=lambda tup: tup[1])
 
-    def transpose_actions(self, x, k=1):
-        x = x.view(self.size, self.size)
-        x = x.detach().numpy()
-        x = np.rot90(x, k)
-        x = x.flatten()
+    def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
+        for x in X:
+            self.preprocess(x[0])
+        epochs = 3
+        weights_pre = [x.clone() for x in self.parameters()]
+        for epoch in range(epochs):
+            for i, (_x, _y) in enumerate(X, 1):
+                if i % 100 == 0:
+                    logger.debug(f"Trained on {i} samples")
+                self.optimizer.zero_grad()
+                y = np.zeros(self.classes)
+                for k, v in _y:
+                    y[self.action_to_index[k]] = v
+                y = torch.tensor(y, dtype=torch.float, requires_grad=True)
+                x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True), torch.tensor([_x[1]], dtype=torch.float)
+                x = self(x)
 
-        return torch.tensor(x, dtype=torch.float, requires_grad=True)
-
-
-
+                loss = self.LOSS_FUNCTION(x, y)
+                loss.backward()
+                self.optimizer.step()
+        if False not in [torch.equal(weights_pre[i], list(self.parameters())[i]) for i in range(len(weights_pre))]:
+            print("Weights unchanged")
+        else:
+            pass
+            #print(weights_pre[0] - list(self.parameters())[0])

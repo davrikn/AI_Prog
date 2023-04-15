@@ -11,12 +11,12 @@ size = 4
 OHT_size = 7
 simulations = 25
 log_level: int = logging.INFO
-save_data = False
+save_data = True
 
 
 # MCTS parameters
 num_episodes = 1000
-num_rollouts = 500
+num_rollouts = 100
 decay_rate = 1
 epsilon = 1
 deepflush = False

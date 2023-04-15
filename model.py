@@ -21,7 +21,6 @@ class Model(nn.Module):
     action_to_index: dict[str, int]
     index_to_action: dict[int, str]
     # optimizer: torch.optim.Optimizer
-    optimizer: configs.optimizer
 
     def __init__(self, size: int, classes: int, snapshotdir: os.PathLike):
         super().__init__()
@@ -53,6 +52,7 @@ class Model(nn.Module):
         for x in X:
             self.preprocess(x[0])
         epochs = 3
+        weights_pre = [x.clone() for x in self.parameters()]
         for epoch in range(epochs):
             for i, (_x, _y) in enumerate(X, 1):
                 if i % 100 == 0:
@@ -64,18 +64,15 @@ class Model(nn.Module):
                 y = torch.tensor(y, dtype=torch.float, requires_grad=True)
                 x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True), torch.tensor([_x[1]], dtype=torch.float)
                 x = self(x)
-                if _x[1] == -1:
-                    y = self.transpose_actions(y, k=-1)
 
-                # x = self.remove_invalid_moves(x, y)
-
-                a = list(self.parameters())[0].clone()
                 loss = self.LOSS_FUNCTION(x, y)
                 loss.backward()
                 self.optimizer.step()
-                b = list(self.parameters())[0].clone()
-                print(torch.equal(a.data, b.data))
-
+        if False not in [torch.equal(weights_pre[i], list(self.parameters())[i]) for i in range(len(weights_pre))]:
+            print("Weights unchanged")
+        else:
+            pass
+            #print(weights_pre[0] - list(self.parameters())[0])
 
     def append_rbuf(self, data: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
         self.rbuf.extend(data)
