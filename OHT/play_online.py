@@ -5,7 +5,7 @@ from ActorClient import ActorClient
 from hex.hexModel import HexModel
 
 actor = HexAgent(model=HexModel(boardsize=configs.OHT_size,
-                                snapshotdir=configs.model_dir + 'hex_size_7_checkpoint_0.pt'), name="OHT")
+                                snapshotdir=configs.model_dir + '50.pt'), name="OHT")
 
 
 # Import and override the `handle_get_action` hook in ActorClient
@@ -24,5 +24,5 @@ class MyClient(ActorClient):
 
 # Initialize and run your overridden client when the script is executed
 if __name__ == '__main__':
-    client = MyClient(auth='', qualify=False)
+    client = MyClient(auth='e28cd505293d48cabc5893bc5befa599', qualify=False)
     client.run()

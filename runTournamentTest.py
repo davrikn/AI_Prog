@@ -8,10 +8,10 @@ from monteCarlo import MonteCarlo, MonteCarloNode
 from tournament import Tournament
 
 test0 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/0.pt"), name="__________0")
-test50 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/250.pt"), name="__________250")
-test100 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/500.pt"), name="__________500")
-test150 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/750.pt"), name="__________750")
-test200 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/1000.pt"), name="__________1000")
+test50 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/50.pt"), name="__________50")
+test100 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/100.pt"), name="__________100")
+test150 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/150.pt"), name="__________150")
+test200 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/200.pt"), name="__________200")
 
 print(list(test0.model.parameters()))
 print(list(test50.model.parameters()))
@@ -28,7 +28,7 @@ tournament.run_tournament()
 test0 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/0.pt")
                   ,name="model_0")
 
-test1 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/500.pt")
+test1 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/200.pt")
                   ,name="model_1")
 
 # TODO: Delete, just testing

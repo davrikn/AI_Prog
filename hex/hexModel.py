@@ -9,7 +9,8 @@ import os
 import torch
 from logging import getLogger
 import torch.nn.functional as F
-
+from tensorflow import keras as ks
+from keras.optimizers import Adam
 
 logger = getLogger()
 
@@ -19,9 +20,21 @@ class HexModel(Model):
 
     def __init__(self, boardsize: int, snapshotdir: os.PathLike = '/'):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
-        self.lin1 = nn.Linear(boardsize**2*2, 64)
-        self.lin2 = nn.Linear(64, 128)
-        self.lin3 = nn.Linear(128, boardsize * boardsize)
+        self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
+        self.conv2 = nn.Conv2d(32, 64, 3, 1, 1)
+
+        self.d1 = nn.Dropout(0.4)
+        self.d2 = nn.Dropout(0.4)
+        self.d3 = nn.Dropout(0.4)
+
+        self.lin1 = nn.Linear(boardsize**2*64, 256)
+        self.lin2 = nn.Linear(256, 512)
+        self.lin3 = nn.Linear(512, boardsize * boardsize)
+
+        nn.init.xavier_uniform_(self.lin1.weight)
+        nn.init.xavier_uniform_(self.lin2.weight)
+        nn.init.xavier_uniform_(self.lin3.weight)
+
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
@@ -29,7 +42,6 @@ class HexModel(Model):
         self.index_to_action_transpose = {v: k for k, v in self.action_to_index_transpose.items()}
 
         self.crit = nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=configs.learning_rate)
 
         if isfile(f"{snapshotdir}"):
             logger.info("Loading statedict")
@@ -40,6 +52,10 @@ class HexModel(Model):
             logger.info("Loading statedict")
             self.load_state_dict(load(f"{snapshotdir}/{self.name}_size_{boardsize}.pth"))
             logger.info("Finished loading statedict")
+
+        self.moves = dict()
+        for move in list(self.action_to_index.keys()):
+            self.moves[move] = dict({"count": 0, "cum": 0})
 
     def pad(self, input: str or int, length: int = 2, start=True):
         padding = "0" * length
@@ -81,11 +97,16 @@ class HexModel(Model):
         return x.flatten()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
         x = x.view(-1)
         x = F.relu(self.lin1(x))
+        x = self.d1(x)
         x = F.relu(self.lin2(x))
+        x = self.d2(x)
         x = F.relu(self.lin3(x))
-        x = self.sm(x)
+        x = self.d3(x)
+        #x = self.sm(x)
         return x
 
     def classify(self, x: tuple[np.ndarray, int]) -> list[tuple[str, float]]:
@@ -95,44 +116,46 @@ class HexModel(Model):
             if p == -1:
                 x = self.transform(x)
             x = tensor(x, dtype=torch.float)
-            x = self(x).numpy()
+            x = self.sm(self(x)).numpy()
             if p == -1:
                 x = self.transform_target(x)
             actions = [(self.index_to_action[idx], probability) for idx, probability in enumerate(x)]
             return sorted(actions, key=lambda tup: tup[1])
 
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
-        optimizer = torch.optim.Adam(self.parameters(), lr=0.01)
+        optimizer = torch.optim.Adam(self.parameters(), lr=configs.learning_rate)
 
         print(f"Batch len: {len(X)}")
         for x, _y in X:
 
             p = x[1]
-
-            if p == -1:
-                continue
-
             x = x[0]
-
             y = np.zeros(self.classes)
-            for k, v in _y:
-                y[self.action_to_index[k]] = v
 
+            for i, (k, v) in enumerate(_y):
+                y[self.action_to_index[k]] = 1
+                self.moves[k]["count"] += 1
+                self.moves[k]["cum"] += v
+
+
+            print(f"x1: {x}")
             if p == -1:
+                print("p2")
                 x = self.transform(x)
                 y = self.transform_target(y)
-
+            print(f"x2:{x}")
             y = tensor(y, dtype=torch.float, requires_grad=False)
             x = tensor(x, dtype=torch.float, requires_grad=True)
 
 
             optimizer.zero_grad()
             out = self(x)
-            print(f"\n\nY:{y}\nX:{x}\nOut:{out}")
-
             loss = self.crit(out, y)
+
             loss.backward()
             optimizer.step()
+            print(f"\n\nY: {y.detach()}\nX: {x.detach()}\nOut: {out.detach()}\nLoss: {loss}")
+
 
 
 if __name__ == "__main__":
