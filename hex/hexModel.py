@@ -20,20 +20,17 @@ class HexModel(Model):
 
     def __init__(self, boardsize: int, snapshotdir: os.PathLike = '/'):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
-        self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
-        self.conv2 = nn.Conv2d(32, 64, 3, 1, 1)
+        self.conv1 = nn.Conv2d(2, 16, 3, 1, 1)
+        self.conv2 = nn.Conv2d(16, 32, 3, 1, 1)
 
         self.d1 = nn.Dropout(0.4)
         self.d2 = nn.Dropout(0.4)
         self.d3 = nn.Dropout(0.4)
 
-        self.lin1 = nn.Linear(boardsize**2*64, 256)
-        self.lin2 = nn.Linear(256, 512)
-        self.lin3 = nn.Linear(512, boardsize * boardsize)
+        self.lin1 = nn.Linear(boardsize**2*32, 128)
+        self.lin2 = nn.Linear(128, 128)
+        self.lin3 = nn.Linear(128, boardsize * boardsize)
 
-        nn.init.xavier_uniform_(self.lin1.weight)
-        nn.init.xavier_uniform_(self.lin2.weight)
-        nn.init.xavier_uniform_(self.lin3.weight)
 
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
@@ -41,7 +38,7 @@ class HexModel(Model):
         self.action_to_index_transpose = self.gen_action_index_dict_transpose()
         self.index_to_action_transpose = {v: k for k, v in self.action_to_index_transpose.items()}
 
-        self.crit = nn.CrossEntropyLoss()
+        self.crit = nn.MSELoss()
 
         if isfile(f"{snapshotdir}"):
             logger.info("Loading statedict")
@@ -106,7 +103,7 @@ class HexModel(Model):
         x = self.d2(x)
         x = F.relu(self.lin3(x))
         x = self.d3(x)
-        #x = self.sm(x)
+        x = self.sm(x)
         return x
 
     def classify(self, x: tuple[np.ndarray, int]) -> list[tuple[str, float]]:
@@ -133,17 +130,14 @@ class HexModel(Model):
             y = np.zeros(self.classes)
 
             for i, (k, v) in enumerate(_y):
-                y[self.action_to_index[k]] = 1
+                y[self.action_to_index[k]] = v
                 self.moves[k]["count"] += 1
                 self.moves[k]["cum"] += v
 
 
-            print(f"x1: {x}")
             if p == -1:
-                print("p2")
                 x = self.transform(x)
                 y = self.transform_target(y)
-            print(f"x2:{x}")
             y = tensor(y, dtype=torch.float, requires_grad=False)
             x = tensor(x, dtype=torch.float, requires_grad=True)
 
@@ -151,7 +145,6 @@ class HexModel(Model):
             optimizer.zero_grad()
             out = self(x)
             loss = self.crit(out, y)
-
             loss.backward()
             optimizer.step()
             print(f"\n\nY: {y.detach()}\nX: {x.detach()}\nOut: {out.detach()}\nLoss: {loss}")
