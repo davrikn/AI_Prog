@@ -16,14 +16,23 @@ class HexAgent:
     def perform_move_probabilistic(self, state: HexWorld) -> HexWorld:
         def remove_invalid_moves(action_dist, state: HexWorld):
             valid_actions = state.get_possible_actions()
+            test = 0
+            new_dist = []
             for idx, action in enumerate(action_dist):
-                if action[0] not in valid_actions:
-                    action_dist.remove(action)
+                if action[0] in valid_actions:
+                    new_dist.append(action)
+            return new_dist
+
+        def scale_weights(w):
+            scaled_weights = [x**6 for x in w]
+            return scaled_weights/np.sum(scaled_weights)
+
 
         actions_probabilities = self.model.classify(state.state(deNested=True))
-        remove_invalid_moves(actions_probabilities, state)
+        actions_probabilities = remove_invalid_moves(actions_probabilities, state)
         actions = [action[0] for action in actions_probabilities]
         weights = [action[1] for action in actions_probabilities]
+        weights = scale_weights(weights)
         # min_val = min(weights)
         # if min_val < 0:
         #     weights = [(x + abs(min_val) + 1)**3 for x in weights]
@@ -38,7 +47,8 @@ class HexAgent:
                 found_legal_move = True
             except:
                 illegal_moves += 1
-                pass
+                # pass
+                raise Exception("Invalid move..")
 
         return state
 

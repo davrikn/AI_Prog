@@ -17,17 +17,18 @@ class HexModel(Model):
 
     def __init__(self, boardsize: int, snapshotdir: os.PathLike):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
-        self.conv1 = nn.Conv2d(2, 20, 3, 1, 1)
-        self.conv2 = nn.Conv2d(20, 20, 3, 1, 1)
-        self.conv3 = nn.Conv2d(20, 20, 3, 1, 1)
-        self.conv4 = nn.Conv2d(20, 20, 3, 1, 1)
+        self.conv1 = nn.Conv2d(2, 16, 3, 1, 1)
+        self.conv2 = nn.Conv2d(16, 16, 3, 1, 1)
+        self.conv3 = nn.Conv2d(16, 16, 3, 1, 1)
+        # self.conv4 = nn.Conv2d(32, 32, 3, 1, 1)
         # self.conv5 = nn.Conv2d(20, 20, 3, 1, 1)
         # self.lin1 = nn.Linear(8 * boardsize * boardsize, 32)
-        self.lin1 = nn.Linear(20 * boardsize * boardsize, 64)
+        self.lin1 = nn.Linear(16 * boardsize * boardsize, 64)
         self.lin2 = nn.Linear(64, boardsize * boardsize)
         # self.lin1 = nn.Linear(128*boardsize*boardsize, 512)
         # self.lin2 = nn.Linear(512, 256)
         # self.lin3 = nn.Linear(256, boardsize*boardsize)
+        self.relu = nn.ReLU(inplace=True)
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
@@ -76,8 +77,13 @@ class HexModel(Model):
             temp = copy.deepcopy(x[0][0])
             x[0][0] = x[0][1]
             x[0][1] = temp
-            x[0][0] = np.rot90(x[0][0], k=-1)
-            x[0][1] = np.rot90(x[0][1], k=-1)
+            x[0][0] = np.flip(x[0][0], axis=0)
+            x[0][1] = np.flip(x[0][1], axis=0)
+            # temp = copy.deepcopy(x[0][0])
+            # x[0][0] = x[0][1]
+            # x[0][1] = temp
+            # x[0][0] = np.rot90(x[0][0], k=-1)
+            # x[0][1] = np.rot90(x[0][1], k=-1)
 
 
     def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
@@ -85,12 +91,13 @@ class HexModel(Model):
         # x = self.mp1(x)
         x = self.conv2(x)
         x = self.conv3(x)
-        x = self.conv4(x)
+        # x = self.conv4(x)
         # x = self.conv5(x)
         # x = self.mp2(x)
         x = x.view(-1)
         x = self.lin1(x)
         x = self.lin2(x)
+
         # x = self.lin3(x)
         x = self.sm(x)
         return x
@@ -115,7 +122,7 @@ class HexModel(Model):
     def transpose_actions(self, x, k=1):
         x = x.view(self.size, self.size)
         x = x.detach().numpy()
-        x = np.rot90(x, k)
+        x = np.flip(x, axis=0)
         x = x.flatten()
 
         return torch.tensor(x, dtype=torch.float, requires_grad=True)

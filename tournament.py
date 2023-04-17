@@ -53,7 +53,6 @@ class Tournament:
         game = HexWorld(size=configs.size)
         finished = False
         agents_turn = starting_player
-        winning_agent_name = 0
         winning_agent_id = 0
         while not finished:
             if agents_turn == 1:

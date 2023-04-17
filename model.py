@@ -52,7 +52,7 @@ class Model(nn.Module):
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
         for x in X:
             self.preprocess(x[0])
-        epochs = 3
+        epochs = 1
         for epoch in range(epochs):
             for i, (_x, _y) in enumerate(X, 1):
                 if i % 100 == 0:
@@ -70,11 +70,16 @@ class Model(nn.Module):
                 # x = self.remove_invalid_moves(x, y)
 
                 a = list(self.parameters())[0].clone()
+                print(f'Target: {y}')
+                print(f'Pred: {x}')
                 loss = self.LOSS_FUNCTION(x, y)
+                print(f'Loss: {loss}')
                 loss.backward()
                 self.optimizer.step()
+                # print(f"\n\nY: {y.detach()}\nX: {x.detach()}\nOut: {out.detach()}\nLoss: {loss}")
+
                 b = list(self.parameters())[0].clone()
-                print(torch.equal(a.data, b.data))
+                # print(torch.equal(a.data, b.data))
 
 
     def append_rbuf(self, data: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
