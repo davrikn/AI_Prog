@@ -15,10 +15,10 @@ save_data = False
 
 
 # MCTS parameters
-num_episodes = 1000
+num_episodes = 400
 num_rollouts = 500
 decay_rate = 1
-epsilon = 1
+epsilon = 0.01
 deepflush = False
 
 # ANET parameters

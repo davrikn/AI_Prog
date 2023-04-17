@@ -8,6 +8,7 @@ from os.path import isfile
 import os
 import torch
 from logging import getLogger
+import torch.nn.functional as F
 
 logger = getLogger()
 
@@ -17,17 +18,11 @@ class HexModel(Model):
 
     def __init__(self, boardsize: int, snapshotdir: os.PathLike):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
-        self.conv1 = nn.Conv2d(2, 20, 3, 1, 1)
-        self.conv2 = nn.Conv2d(20, 20, 3, 1, 1)
-        self.conv3 = nn.Conv2d(20, 20, 3, 1, 1)
-        self.conv4 = nn.Conv2d(20, 20, 3, 1, 1)
-        # self.conv5 = nn.Conv2d(20, 20, 3, 1, 1)
-        # self.lin1 = nn.Linear(8 * boardsize * boardsize, 32)
-        self.lin1 = nn.Linear(20 * boardsize * boardsize, 64)
-        self.lin2 = nn.Linear(64, boardsize * boardsize)
-        # self.lin1 = nn.Linear(128*boardsize*boardsize, 512)
-        # self.lin2 = nn.Linear(512, 256)
-        # self.lin3 = nn.Linear(256, boardsize*boardsize)
+        self.conv1 = nn.Conv2d(2, 32, 5, 1, 2)
+        self.lin1 = nn.Linear(32 * boardsize * boardsize, 128)
+        self.lin2 = nn.Linear(128, 64)
+        self.lin3 = nn.Linear(64, boardsize * boardsize)
+
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
@@ -81,17 +76,11 @@ class HexModel(Model):
 
 
     def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
-        x = self.conv1(x[0])
-        # x = self.mp1(x)
-        x = self.conv2(x)
-        x = self.conv3(x)
-        x = self.conv4(x)
-        # x = self.conv5(x)
-        # x = self.mp2(x)
+        x = F.relu(self.conv1(x[0]))
         x = x.view(-1)
-        x = self.lin1(x)
-        x = self.lin2(x)
-        # x = self.lin3(x)
+        x = F.relu(self.lin1(x))
+        x = F.relu(self.lin2(x))
+        x = F.relu(self.lin3(x))
         x = self.sm(x)
         return x
 
@@ -102,14 +91,9 @@ class HexModel(Model):
         x = self(x)
         if _player == -1:
             x = self.transpose_actions(x)
-            # x = x.detach().numpy()
-            # actions = [(self.index_to_action_transpose[idx], probability) for idx, probability in enumerate(x)]
 
         x = x.detach().numpy()
         actions = [(self.index_to_action[idx], probability) for idx, probability in enumerate(x)]
-        # sorted_actions = [x for _, x in sorted(zip(x, actions), key=lambda pair: pair[0], reverse=True)]
-        # return list(map(lambda x: self.index_to_action[x], np.argsort(x)))
-        # return sorted_actions
         return sorted(actions, key=lambda tup: tup[1])
 
     def transpose_actions(self, x, k=1):
@@ -120,5 +104,35 @@ class HexModel(Model):
 
         return torch.tensor(x, dtype=torch.float, requires_grad=True)
 
+    def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
+        for x in X:
+            self.preprocess(x[0])
+        epochs = 3
+        for epoch in range(epochs):
+            for i, (_x, _y) in enumerate(X, 1):
+                if i % 100 == 0:
+                    logger.debug(f"Trained on {i} samples")
+                self.optimizer.zero_grad()
+                y = np.zeros(self.classes)
 
+                max_y = 0
+                for k,v in _y:
+                    if v > max_y:
+                        max_y = v
+
+                for k, v in _y:
+                    y[self.action_to_index[k]] = 1 if v == max_y else 0
+                y = torch.tensor(y, dtype=torch.float, requires_grad=True)
+                x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True), torch.tensor([_x[1]], dtype=torch.float)
+                out = self(x)
+                if _x[1] == -1:
+                    y = self.transpose_actions(y, k=-1)
+
+                a = list(self.parameters())[0].clone()
+                loss = self.LOSS_FUNCTION(out, y)
+                loss.backward()
+                print(f"\n\nY:{y}\nX:{x}\nOut:{out}\nLoss:{loss}")
+                self.optimizer.step()
+                b = list(self.parameters())[0].clone()
+                #print(torch.equal(a.data, b.data))
 
