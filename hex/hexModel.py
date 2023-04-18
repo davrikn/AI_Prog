@@ -17,15 +17,15 @@ class HexModel(Model):
 
     def __init__(self, boardsize: int, snapshotdir: os.PathLike):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
-        self.conv1 = nn.Conv2d(2, 20, 3, 1, 1)
-        self.conv2 = nn.Conv2d(20, 15, 3, 1, 1)
+        self.conv1 = nn.Conv2d(2, 30, 3, 1, 1)
+        self.conv2 = nn.Conv2d(30, 20, 3, 1, 1)
         # self.conv3 = nn.Conv2d(16, 16, 3, 1, 1)
         # self.conv4 = nn.Conv2d(16, 16, 3, 1, 1)
         # self.conv5 = nn.Conv2d(16, 16, 3, 1, 1)
         # self.conv4 = nn.Conv2d(32, 32, 3, 1, 1)
         # self.conv5 = nn.Conv2d(20, 20, 3, 1, 1)
         # self.lin1 = nn.Linear(8 * boardsize * boardsize, 32)
-        self.lin1 = nn.Linear(15 * boardsize * boardsize, 128)
+        self.lin1 = nn.Linear(20 * boardsize * boardsize, 128)
         self.lin2 = nn.Linear(128, boardsize * boardsize)
         # self.lin1 = nn.Linear(128*boardsize*boardsize, 512)
         # self.lin2 = nn.Linear(512, 256)
@@ -80,6 +80,8 @@ class HexModel(Model):
             x[0][1] = temp
             x[0][0] = np.rot90(x[0][0], k=-1)
             x[0][1] = np.rot90(x[0][1], k=-1)
+            # x[0][0] = np.transpose(x[0][0])
+            # x[0][1] = np.transpose(x[0][1])
 
 
     def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
@@ -117,6 +119,7 @@ class HexModel(Model):
         x = x.view(self.size, self.size)
         x = x.detach().numpy()
         x = np.rot90(x, k)
+        # x = np.transpose(x)
         x = x.flatten()
 
         return torch.tensor(x, dtype=torch.float, requires_grad=True)

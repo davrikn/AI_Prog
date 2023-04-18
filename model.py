@@ -53,7 +53,7 @@ class Model(nn.Module):
         random.shuffle(X)
         for x in X:
             self.preprocess(x[0])
-        epochs = 1
+        epochs = 5
         for epoch in range(epochs):
             for i, (_x, _y) in enumerate(X, 1):
                 if i % 100 == 0:
