@@ -50,6 +50,7 @@ class Model(nn.Module):
         pass
 
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
+        random.shuffle(X)
         for x in X:
             self.preprocess(x[0])
         epochs = 1
