@@ -48,7 +48,7 @@ def main():
                 model.flush_rbuf()
                 logger.info(f"Episode: {total_episodes}")
             if total_episodes <= 1000 and total_episodes % 50 == 0:
-                model.save_model(file_name=f'hex_size_{model.size}_checkpoint_{total_episodes}')
+                model.save_model(file_name=f'{model.name}_size_{model.size}_checkpoint_{total_episodes}')
                 logger.info(f"Saved model at checkpoint: {total_episodes} episodes")
             next_game_state = MonteCarlo(root=game, model=model).run()
             # next_game_state = MonteCarlo(root=game).run()

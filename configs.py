@@ -23,7 +23,7 @@ deepflush = False
 
 # ANET parameters
 loss_function = nn.MSELoss()  # SGDLoss
-optimizer = torch.optim.Adam  # SGD
+optimizer = "adam"  # adagrad, sgd, rmsprop or adam
 input_variables = 200
 learning_rate = 0.001
 num_hidden_layers = 50

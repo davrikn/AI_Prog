@@ -21,7 +21,7 @@ class Model(nn.Module):
     action_to_index: dict[str, int]
     index_to_action: dict[int, str]
     # optimizer: torch.optim.Optimizer
-    optimizer: configs.optimizer
+    optimizer: torch.optim.Optimizer
 
     def __init__(self, size: int, classes: int, snapshotdir: os.PathLike):
         super().__init__()
@@ -42,7 +42,7 @@ class Model(nn.Module):
         pass
 
     @abstractmethod
-    def classify(self, x: tuple[np.ndarray, int]) -> list[str]:
+    def classify(self, x: tuple[np.ndarray, int]) -> list[tuple[str, float]]:
         pass
 
     @abstractmethod
@@ -51,8 +51,6 @@ class Model(nn.Module):
 
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
         random.shuffle(X)
-        for x in X:
-            self.preprocess(x[0])
         epochs = 1
         for epoch in range(epochs):
             for i, (_x, _y) in enumerate(X, 1):
@@ -65,23 +63,23 @@ class Model(nn.Module):
                 y = torch.tensor(y, dtype=torch.float, requires_grad=True)
                 x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True), torch.tensor([_x[1]], dtype=torch.float)
                 x = self(x)
-                if _x[1] == -1:
-                    y = self.transpose_actions(y, k=-1)
 
-                # x = self.remove_invalid_moves(x, y)
-
-                a = list(self.parameters())[0].clone()
-                print(f'Target: {y}')
-                print(f'Pred: {x}')
                 loss = self.LOSS_FUNCTION(x, y)
-                print(f'Loss: {loss}')
                 loss.backward()
                 self.optimizer.step()
-                # print(f"\n\nY: {y.detach()}\nX: {x.detach()}\nOut: {out.detach()}\nLoss: {loss}")
 
-                b = list(self.parameters())[0].clone()
-                # print(torch.equal(a.data, b.data))
 
+    def resolve_optimizer(self) -> torch.optim.Optimizer:
+        if configs.optimizer == 'adagrad':
+            return torch.optim.Adagrad(self.parameters(), lr=configs.learning_rate)
+        elif configs.optimizer == 'sgd':
+            return torch.optim.SGD(self.parameters(), lr=configs.learning_rate, momentum=0.9)
+        elif configs.optimizer == 'rmsprop':
+            return torch.optim.RMSprop(self.parameters(), lr=configs.learning_rate)
+        elif configs.optimizer == 'adam':
+            return torch.optim.Adam(self.parameters(), lr=configs.learning_rate)
+        else:
+            raise Exception("Unknown optimizer")
 
     def append_rbuf(self, data: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
         self.rbuf.extend(data)

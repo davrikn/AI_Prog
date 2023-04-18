@@ -8,9 +8,11 @@ from os.path import isfile
 import os
 import torch
 from logging import getLogger
+import random
 
 logger = getLogger()
 
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 class HexModel(Model):
     name = 'hex_v2'
@@ -36,7 +38,7 @@ class HexModel(Model):
         self.action_to_index_transpose = self.gen_action_index_dict_transpose()
         self.index_to_action_transpose = {v: k for k, v in self.action_to_index_transpose.items()}
 
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=configs.learning_rate)
+        self.optimizer = self.resolve_optimizer()
 
         if isfile(f"{snapshotdir}"):
             logger.info("Loading statedict")
@@ -99,7 +101,7 @@ class HexModel(Model):
     def classify(self, x: tuple[np.ndarray, int]) -> list[tuple[str, float]]:
         _player = x[1]
         self.preprocess(x)
-        x = tensor(x[0], dtype=torch.float), tensor([x[1]], dtype=torch.float)
+        x = tensor(x[0], dtype=torch.float, device=device), tensor([x[1]], dtype=torch.float)
         x = self(x)
         if _player == -1:
             x = self.transpose_actions(x)
@@ -121,5 +123,38 @@ class HexModel(Model):
 
         return torch.tensor(x, dtype=torch.float, requires_grad=True)
 
+
+    def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
+        random.shuffle(X)
+        for x in X:
+            self.preprocess(x[0])
+        epochs = 1
+        for epoch in range(epochs):
+            for i, (_x, _y) in enumerate(X, 1):
+                if i % 100 == 0:
+                    logger.debug(f"Trained on {i} samples")
+                self.optimizer.zero_grad()
+                y = np.zeros(self.classes)
+                for k, v in _y:
+                    y[self.action_to_index[k]] = v
+                y = torch.tensor(y, dtype=torch.float, requires_grad=True, device=device)
+                x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True, device=device), torch.tensor([_x[1]], dtype=torch.float)
+                x = self(x)
+                if _x[1] == -1:
+                    y = self.transpose_actions(y, k=-1)
+
+                # x = self.remove_invalid_moves(x, y)
+
+                a = list(self.parameters())[0].clone()
+                print(f'Target: {y}')
+                print(f'Pred: {x}')
+                loss = self.LOSS_FUNCTION(x, y)
+                print(f'Loss: {loss}')
+                loss.backward()
+                self.optimizer.step()
+                # print(f"\n\nY: {y.detach()}\nX: {x.detach()}\nOut: {out.detach()}\nLoss: {loss}")
+
+                b = list(self.parameters())[0].clone()
+                # print(torch.equal(a.data, b.data))
 
 

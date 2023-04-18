@@ -58,12 +58,14 @@ class NimModel(Model):
         x = self.rl2(x)
         return x
 
-    def classify(self, x: tuple[np.ndarray, int]) -> list[str]:
+    def classify(self, x: tuple[np.ndarray, int]) -> list[tuple[str, float]]:
         x = tensor(x[0], dtype=torch.float, requires_grad=True), tensor([x[1]], dtype=torch.float)
         x = self(x)
         x = nn.Softmax(dim=0)(x)
         x = x.detach().numpy()
-        return list(map(lambda x: self.index_to_action[x], np.argsort(x)))
+        actions = [(self.index_to_action[idx], probability) for idx, probability in enumerate(x)]
+        return sorted(actions, key=lambda tup: tup[1])
+
 
     def load_train_data(self):
         file = reader(open('../train.csv'))
