@@ -77,13 +77,8 @@ class HexModel(Model):
             temp = copy.deepcopy(x[0][0])
             x[0][0] = x[0][1]
             x[0][1] = temp
-            x[0][0] = np.flip(x[0][0], axis=0)
-            x[0][1] = np.flip(x[0][1], axis=0)
-            # temp = copy.deepcopy(x[0][0])
-            # x[0][0] = x[0][1]
-            # x[0][1] = temp
-            # x[0][0] = np.rot90(x[0][0], k=-1)
-            # x[0][1] = np.rot90(x[0][1], k=-1)
+            x[0][0] = np.rot90(x[0][0], k=-1)
+            x[0][1] = np.rot90(x[0][1], k=-1)
 
 
     def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
@@ -122,7 +117,7 @@ class HexModel(Model):
     def transpose_actions(self, x, k=1):
         x = x.view(self.size, self.size)
         x = x.detach().numpy()
-        x = np.flip(x, axis=0)
+        x = np.rot90(x, k)
         x = x.flatten()
 
         return torch.tensor(x, dtype=torch.float, requires_grad=True)

@@ -64,6 +64,10 @@ class MonteCarloNode:
             return sorted(self.children, reverse=True,
                           key=cmp_to_key(lambda node1, node2: node1.a_t_max() - node2.a_t_max()))[0]
         if self.state.player == -1:
+            if not self.children:
+                print("TEST:", self.state)
+
+
             return sorted(self.children,
                           key=cmp_to_key(lambda node1, node2: node1.a_t_min() - node2.a_t_min()))[0]
 
@@ -97,6 +101,8 @@ class MonteCarlo:
             # Expand the leaf node
             expand_start = time.perf_counter()
             leaf_node.expand()
+            # self.check_child_is_win(leaf_node.children)
+
             expand_end = time.perf_counter()
             self.expands += 1
             self.expand_time += expand_end-expand_start
@@ -118,12 +124,26 @@ class MonteCarlo:
 
         return self.get_most_visited_edge()
 
+    def check_child_is_win(self, children: list[MonteCarloNode]):
+        for child in children:
+            if child.state.get_utility() == child.parent.state.player:
+                child.visits = 1e6
+            elif child.state.get_utility() == child.parent.state.player * -1:
+                child.visits = 1e5
+
     def get_most_visited_edge(self) -> MonteCarloNode:
+        for child in self.root.children:
+            if child.state.get_utility() == self.root.state.player:
+                child.visits = 1e6
+            elif child.state.get_utility() == self.root.state.player * -1:
+                child.visits = 1e5
+
+
         highest_visit_count = sorted(self.root.children, reverse=True, key=lambda child: child.visits)[0].visits
         most_visited_edges = [self.root.children[i] for i in range(len(self.root.children))
                               if self.root.children[i].visits == highest_visit_count]
 
-        return random.choice(most_visited_edges)
+        return most_visited_edges[0]
         # return sorted(self.root.children, reverse=True, key=lambda child: child.visits)[0]
 
     def tree_search(self):

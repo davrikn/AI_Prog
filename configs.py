@@ -16,7 +16,7 @@ save_data = False
 
 # MCTS parameters
 num_episodes = 1000
-num_rollouts = 50
+num_rollouts = 250
 decay_rate = 1
 epsilon = 0.25
 deepflush = False

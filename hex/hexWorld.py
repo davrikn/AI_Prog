@@ -138,24 +138,24 @@ class HexWorld(Game):
     def __str__(self):
         hexarray = []
         for i in range(self.size):
-            row = [map_to_player(self.board[i-j][j]) for j in range(i+1)]
-            #row = [str((i-j, j)) for j in range(i+1)]
+            row = [map_to_player(self.board[i - j][j]) for j in range(i + 1)]
+            # row = [str((i-j, j)) for j in range(i+1)]
             row = " ".join(row)
             hexarray.append(row)
         for i in range(1, self.size):
-            row = [map_to_player(self.board[self.size-1-j, i+j]) for j in range(self.size-i)]
-            #row = [str((self.size-1-j, i+j)) for j in range(self.size-i)]
+            row = [map_to_player(self.board[self.size - 1 - j, i + j]) for j in range(self.size - i)]
+            # row = [str((self.size-1-j, i+j)) for j in range(self.size-i)]
             row = " ".join(row)
             hexarray.append(row)
 
-        prev_len = len(hexarray[self.size-1])
+        prev_len = len(hexarray[self.size - 1])
         acc = 0
-        for j, i in enumerate(range(self.size-1, -1, -1)):
+        for j, i in enumerate(range(self.size - 1, -1, -1)):
             row_len = len(hexarray[i])
-            diff = prev_len-row_len
-            acc += int(diff/2)
-            hexarray[i] = " "*acc+hexarray[i]
-            hexarray[self.size-1+j] = " "*acc+hexarray[self.size-1+j]
+            diff = prev_len - row_len
+            acc += int(diff / 2)
+            hexarray[i] = " " * acc + hexarray[i]
+            hexarray[self.size - 1 + j] = " " * acc + hexarray[self.size - 1 + j]
             prev_len = row_len
         hexarray = "\n".join(hexarray)
         return hexarray
