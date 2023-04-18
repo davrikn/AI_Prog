@@ -120,7 +120,6 @@ class MonteCarlo:
                 logger.debug(f"Exiting after {num_rollouts} episodes")
         logger.debug(f"Average rollout duration: {self.rollout_time/self.rollouts}. Rollout count: {self.rollouts}. Total rollout time: {self.rollout_time}")
         logger.debug(f"Average expand duration: {self.expand_time/self.expands}. Expand count: {self.expands}. Total expand time: {self.expand_time}")
-        self.flush_train_data()
 
         return self.get_most_visited_edge()
 
@@ -132,18 +131,26 @@ class MonteCarlo:
                 child.visits = 1e5
 
     def get_most_visited_edge(self) -> MonteCarloNode:
-        for child in self.root.children:
-            if child.state.get_utility() == self.root.state.player:
-                child.visits = 1e6
-            elif child.state.get_utility() == self.root.state.player * -1:
-                child.visits = 1e5
+        if any(x.state.is_final_state() for x in self.root.children):
+            self.root.visits = 1
+            for child in self.root.children:
+                if child.state.get_utility() == self.root.state.player:
+                    child.visits = 2
+                    self.root.visits += 2
+                elif child.state.get_utility() == self.root.state.player * -1:
+                    child.visits = 1
+                    self.root.visits += 1
+                else:
+                    child.visits = 0
 
+
+        self.flush_train_data() ## TODO: Refactor out
 
         highest_visit_count = sorted(self.root.children, reverse=True, key=lambda child: child.visits)[0].visits
         most_visited_edges = [self.root.children[i] for i in range(len(self.root.children))
                               if self.root.children[i].visits == highest_visit_count]
 
-        return most_visited_edges[0]
+        return random.choice(most_visited_edges)
         # return sorted(self.root.children, reverse=True, key=lambda child: child.visits)[0]
 
     def tree_search(self):

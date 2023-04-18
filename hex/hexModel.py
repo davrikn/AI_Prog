@@ -17,15 +17,15 @@ class HexModel(Model):
 
     def __init__(self, boardsize: int, snapshotdir: os.PathLike):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
-        self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
-        self.conv2 = nn.Conv2d(32, 16, 3, 1, 1)
+        self.conv1 = nn.Conv2d(2, 20, 3, 1, 1)
+        self.conv2 = nn.Conv2d(20, 15, 3, 1, 1)
         # self.conv3 = nn.Conv2d(16, 16, 3, 1, 1)
         # self.conv4 = nn.Conv2d(16, 16, 3, 1, 1)
         # self.conv5 = nn.Conv2d(16, 16, 3, 1, 1)
         # self.conv4 = nn.Conv2d(32, 32, 3, 1, 1)
         # self.conv5 = nn.Conv2d(20, 20, 3, 1, 1)
         # self.lin1 = nn.Linear(8 * boardsize * boardsize, 32)
-        self.lin1 = nn.Linear(16 * boardsize * boardsize, 64)
+        self.lin1 = nn.Linear(15 * boardsize * boardsize, 64)
         self.lin2 = nn.Linear(64, boardsize * boardsize)
         # self.lin1 = nn.Linear(128*boardsize*boardsize, 512)
         # self.lin2 = nn.Linear(512, 256)
@@ -93,8 +93,6 @@ class HexModel(Model):
         x = x.view(-1)
         x = self.lin1(x)
         x = self.lin2(x)
-
-        # x = self.lin3(x)
         x = self.sm(x)
         return x
 
