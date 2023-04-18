@@ -135,9 +135,6 @@ class MonteCarlo:
             self.root.visits = 1
             for child in self.root.children:
                 if child.state.get_utility() == self.root.state.player:
-                    child.visits = 2
-                    self.root.visits += 2
-                elif child.state.get_utility() == self.root.state.player * -1:
                     child.visits = 1
                     self.root.visits += 1
                 else:
