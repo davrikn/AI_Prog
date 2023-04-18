@@ -15,10 +15,10 @@ agent100 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_d
                     , name="Checkpoint100Agent")
 agent150 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_4_checkpoint_150.pt")
                     , name="Checkpoint150Agent")
-agent200 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_4_checkpoint_200.pt")
-                    , name="Checkpoint200Agent")
-# agent250 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_4_checkpoint_250.pt")
-#                     , name="Checkpoint250Agent")
+# agent200 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_4_checkpoint_200.pt")
+#                     , name="Checkpoint200Agent")
+agent250 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_4_checkpoint_250.pt")
+                    , name="Checkpoint250Agent")
 agent300 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_4_checkpoint_300.pt")
                     , name="Checkpoint300Agent")
 # agent400 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_4_checkpoint_400.pt")
@@ -46,7 +46,7 @@ agent1000 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_
 # test800 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/800.pt"), name="__________800")
 # test1000 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/1000.pt"), name="__________1000")
 
-tournament = Tournament([agent0, agent50, agent100, agent150, agent200, agent500, agent900], G=100, UI=False)
+tournament = Tournament([agent0, agent50, agent100, agent150, agent250, agent500, agent900], G=100, UI=False)
 # tournament = Tournament([test200, test300, test400, test0, test1000, test100], G=150, UI=True)
 
 tournament.run_tournament()
