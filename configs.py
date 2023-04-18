@@ -22,7 +22,7 @@ epsilon = 0.15
 deepflush = False
 
 # ANET parameters
-loss_function = nn.MSELoss()  # SGDLoss
+loss_function = nn.CrossEntropyLoss()  # SGDLoss
 optimizer = torch.optim.Adam  # SGD
 input_variables = 100
 learning_rate = 0.001
