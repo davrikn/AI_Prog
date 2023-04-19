@@ -19,6 +19,7 @@ num_episodes = 1000
 num_rollouts = 200
 decay_rate = 1
 epsilon = 0.25
+structure = [[size**2*20, 128, 'relu'], [128, size**2, 'relu']]
 deepflush = False
 
 # ANET parameters

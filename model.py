@@ -5,6 +5,7 @@ from os.path import exists
 
 import numpy as np
 import torch.nn as nn
+import torch.nn.functional as F
 import torch
 import os
 
@@ -28,6 +29,7 @@ class Model(nn.Module):
         self.size = size
         self.classes = classes
         self.snapshotdir = snapshotdir
+        self.init_model()
 
     @abstractmethod
     def preprocess(self, x: tuple[np.ndarray, int]) -> torch.Tensor:
@@ -48,6 +50,26 @@ class Model(nn.Module):
     @abstractmethod
     def gen_action_to_index(self) -> dict[str, int]:
         pass
+
+    def init_model(self):
+        def resolve_activation_function(f: str):
+            if f == 'linear':
+                return F.linear
+            elif f == 'sigmoid':
+                return F.sigmoid
+            elif f == 'tanh':
+                return F.tanh
+            elif f == 'relu':
+                return F.relu
+            else:
+                raise Exception(f"Unknown activation function {f}")
+
+        modules = dict()
+        for i, conf in enumerate(configs.structure):
+            modules[i*2] = nn.Linear(conf[0], conf[1])
+            modules[i*2+1] = resolve_activation_function(conf[2])
+        self.linears = modules
+
 
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
         random.shuffle(X)

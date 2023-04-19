@@ -21,17 +21,7 @@ class HexModel(Model):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
         self.conv1 = nn.Conv2d(2, 30, 3, 1, 1)
         self.conv2 = nn.Conv2d(30, 20, 3, 1, 1)
-        # self.conv3 = nn.Conv2d(16, 16, 3, 1, 1)
-        # self.conv4 = nn.Conv2d(16, 16, 3, 1, 1)
-        # self.conv5 = nn.Conv2d(16, 16, 3, 1, 1)
-        # self.conv4 = nn.Conv2d(32, 32, 3, 1, 1)
-        # self.conv5 = nn.Conv2d(20, 20, 3, 1, 1)
-        # self.lin1 = nn.Linear(8 * boardsize * boardsize, 32)
-        self.lin1 = nn.Linear(20 * boardsize * boardsize, 128)
-        self.lin2 = nn.Linear(128, boardsize * boardsize)
-        # self.lin1 = nn.Linear(128*boardsize*boardsize, 512)
-        # self.lin2 = nn.Linear(512, 256)
-        # self.lin3 = nn.Linear(256, boardsize*boardsize)
+        self.seq = self.init_model()
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
@@ -88,15 +78,10 @@ class HexModel(Model):
 
     def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
         x = self.conv1(x[0])
-        # x = self.mp1(x)
         x = self.conv2(x)
-        # x = self.conv3(x)
-        # x = self.conv4(x)
-        # x = self.conv5(x)
-        # x = self.mp2(x)
         x = x.view(-1)
-        x = self.lin1(x)
-        x = self.lin2(x)
+        for i in range(len(configs.structure)*2):
+            x = self.linears[i](x)
         x = self.sm(x)
         return x
 
