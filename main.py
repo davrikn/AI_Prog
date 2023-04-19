@@ -36,6 +36,10 @@ def main():
     else:
         raise Exception(f"Game {configs.game} is not supported")
 
+    saving_intervals = (configs.num_episodes / (configs.M-1))
+    if not saving_intervals.is_integer():
+        raise Exception(f"Num episodes {configs.num_episodes} must be divisible by M-1 {configs.M-1}")
+
     total_episodes = 0
     simulations = 0
     while total_episodes <= configs.num_episodes:
@@ -44,10 +48,10 @@ def main():
         turns = 0
         utility = game.get_utility()
         while utility == 0:
-            if total_episodes % 50 == 0:
+            if total_episodes % (50 if saving_intervals > 50 else saving_intervals) == 0:
                 model.flush_rbuf()
                 logger.info(f"Episode: {total_episodes}")
-            if total_episodes <= 1000 and total_episodes % 50 == 0:
+            if total_episodes % saving_intervals == 0:
                 model.save_model(file_name=f'hex_size_{model.size}_checkpoint_{total_episodes}')
                 logger.info(f"Saved model at checkpoint: {total_episodes} episodes")
             next_game_state = MonteCarlo(root=game, model=model).run()

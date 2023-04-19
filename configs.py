@@ -12,10 +12,12 @@ OHT_size = 7
 simulations = 25
 log_level: int = logging.INFO
 save_data = False
+M = 6
+G = 250
 
 
 # MCTS parameters
-num_episodes = 1000
+num_episodes = 250
 num_rollouts = 200
 decay_rate = 1
 epsilon = 0.25

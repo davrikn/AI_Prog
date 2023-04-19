@@ -39,7 +39,7 @@ agent1000 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_
                     , name="Checkpoint1000Agent")
 #
 
-tournament = Tournament([agent0, agent50, agent100, agent150, agent200, agent300, agent400], G=150, UI=False)
+tournament = Tournament([agent0, agent50, agent100, agent150, agent200, agent300, agent400], G=configs.G, UI=False)
 # tournament = Tournament([test200, test300, test400, test0, test1000, test100], G=150, UI=True)
 
 tournament.run_tournament()
