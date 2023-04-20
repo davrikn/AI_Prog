@@ -24,7 +24,7 @@ epsilon = 0.25
 deepflush = False
 
 # ANET parameters
-structure = [[128, 'relu'], [256, 'relu']]
+structure = [[128, 'relu']]
 loss_function = nn.MSELoss()  # SGDLoss
 optimizer = "adam"  # adagrad, sgd, rmsprop or adam
 input_variables = 200
