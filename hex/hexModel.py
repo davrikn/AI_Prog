@@ -1,6 +1,5 @@
 import copy
 
-import configs
 from model import Model
 import numpy as np
 from torch import nn, load, tensor
@@ -8,8 +7,6 @@ from os.path import isfile
 import os
 import torch
 from logging import getLogger
-import random
-from torchmetrics import Accuracy
 
 logger = getLogger()
 
@@ -118,8 +115,6 @@ class HexModel(Model):
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
         for x in X:
             self.preprocess(x[0])
-        accuracies = []
-        acc = Accuracy(task="multiclass", num_classes=self.classes)
         for i, (_x, _y) in enumerate(X, 1):
             if i % 100 == 0:
                 logger.debug(f"Trained on {i} samples")
@@ -137,9 +132,3 @@ class HexModel(Model):
             loss.backward()
             self.optimizer.step()
             # print(f"\n\nY: {y.detach()}\nX: {x}\nOut: {out.detach()}\nLoss: {loss}")
-            accuracies.append(acc(out, y).item())
-
-        tot_acc = 0
-        for accuracy in accuracies:
-            tot_acc += accuracy
-        return tot_acc/len(accuracies)

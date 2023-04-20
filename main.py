@@ -36,36 +36,34 @@ def main():
     else:
         raise Exception(f"Game {configs.game} is not supported")
 
-    saving_intervals = (configs.num_simulations / (configs.M - 1))
+    saving_intervals = (configs.num_episodes / (configs.M - 1))
     if not saving_intervals.is_integer():
-        raise Exception(f"Num episodes {configs.num_simulations} must be divisible by M-1 {configs.M - 1}")
+        raise Exception(f"Num episodes {configs.num_episodes} must be divisible by M-1 {configs.M - 1}")
 
-    total_episodes = 0
-    simulations = 0
-    while total_episodes <= configs.num_simulations:
-        logger.debug(f"\nSimulation counter: {simulations + 1}")
+    episodes = 0
+    while episodes <= configs.num_episodes:
+        print(f"\nEpisode counter: {episodes + 1}")
         game = get_game()
         turns = 0
         utility = game.get_utility()
         while utility == 0:
-            if total_episodes % saving_intervals == 0:
-                model.save_model(file_name=f'hex_size_{model.size}_checkpoint_{total_episodes}')
-                logger.info(f"Saved model at checkpoint: {total_episodes} episodes")
             next_game_state = MonteCarlo(root=game, model=model).run()
-            # next_game_state = MonteCarlo(root=game).run()
             logger.debug(f"visited count of best edge: {next_game_state.visits}")
             turns += 1
-            total_episodes += 1
             game = next_game_state.state
-
             if configs.display_UI:
                 print(f'{game}\n')
-
             utility = next_game_state.state.get_utility()
+
         print(f"Player {1 if utility == 1 else 2} won")
         logger.debug(f"Player {1 if utility == 1 else 2} won")
         logger.debug(f"Total number of turns: {turns}")
+
+        if episodes % saving_intervals == 0:
+            model.save_model(file_name=f'hex_size_{model.size}_checkpoint_{episodes}')
+            logger.info(f"Saved model at checkpoint: {episodes} episodes")
         model.flush_rbuf()
+        episodes += 1
     logger.info("Exiting")
     sys.exit(0)
 

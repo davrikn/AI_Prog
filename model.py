@@ -101,28 +101,22 @@ class Model(nn.Module):
 
     def append_rbuf(self, data: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
         self.rbuf = data + self.rbuf
-        if len(self.rbuf) > 150:
-            self.rbuf = self.rbuf[:150]
+        if len(self.rbuf) > 250:
+            self.rbuf = self.rbuf[:250]
 
     def append_rbuf_single(self, data: tuple[tuple[np.ndarray, int], list[tuple[str, float]]]):
         self.rbuf.insert(0, data)
-        if len(self.rbuf) > 200:
-            self.rbuf = self.rbuf[:200]
+        if len(self.rbuf) > 250:
+            self.rbuf = self.rbuf[:250]
 
     def flush_rbuf(self):
         if configs.save_data:
             utils.save_train_data(self.rbuf)
 
         logging.info("Training batch")
-        batchsize = 150 if len(self.rbuf) > 150 else len(self.rbuf)
-        accuracies = []
+        batchsize = 10 if len(self.rbuf) > 150 else len(self.rbuf)
         for i in range(configs.epochs):
-            accuracies.append(self.train_batch(random.sample(self.rbuf, batchsize)))
-
-        tot_acc = 0
-        for acc in accuracies:
-            tot_acc += acc
-        print(f"Training accuracy: {tot_acc/len(accuracies)}")
+            self.train_batch(random.sample(self.rbuf, batchsize))
 
     def save_model(self, file_name: str):
         torch.save(self.state_dict(), f"{configs.model_dir}/{file_name}.pt")
