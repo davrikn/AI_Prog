@@ -24,13 +24,13 @@ epsilon = 0.25
 deepflush = False
 
 # ANET parameters
-structure = [[size**2*20, 128, 'relu'], [128, size**2, 'relu']]
+structure = [[128, 'relu'], [256, 'relu']]
 loss_function = nn.MSELoss()  # SGDLoss
 optimizer = "adam"  # adagrad, sgd, rmsprop or adam
 input_variables = 200
 learning_rate = 0.001
 num_hidden_layers = 50
-epochs = 20
+epochs = 25
 
 # NN model
 model_dir = 'models'

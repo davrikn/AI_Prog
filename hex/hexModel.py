@@ -1,5 +1,5 @@
 import copy
-
+import configs
 from model import Model
 import numpy as np
 from torch import nn, load, tensor
@@ -7,7 +7,8 @@ from os.path import isfile
 import os
 import torch
 from logging import getLogger
-import torch.functional as F
+import torch.nn.functional as F
+from torch.nn import ModuleList
 
 logger = getLogger()
 
@@ -16,12 +17,13 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 class HexModel(Model):
     name = 'hex_v2'
 
+    final_conv = 20
+
     def __init__(self, boardsize: int, snapshotdir: os.PathLike):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
-        self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
-        self.conv2 = nn.Conv2d(32, 64, 5, 1, 2)
-        self.lin1 = nn.Linear(64 * boardsize * boardsize, 128)
-        self.lin2 = nn.Linear(128, boardsize * boardsize)
+        self.conv1 = nn.Conv2d(2, self.final_conv, 3, 1, 1)
+        final_out = self.init_model()
+        self.lin = nn.Linear(final_out, boardsize * boardsize)
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
@@ -39,6 +41,37 @@ class HexModel(Model):
             logger.info("Loading statedict")
             self.load_state_dict(load(f"{snapshotdir}/{self.name}_size_{boardsize}.pth"))
             logger.info("Finished loading statedict")
+
+    def init_model(self):
+        def resolve_activation_function(f: str):
+            if f == 'linear':
+                return F.linear
+            elif f == 'sigmoid':
+                return F.sigmoid
+            elif f == 'tanh':
+                return F.tanh
+            elif f == 'relu':
+                return F.relu
+            else:
+                raise Exception(f"Unknown activation function {f}")
+
+        if len(configs.structure) == 0:
+            configs.structure = [[128, 'relu']]
+
+        last_outputs = 0
+        modules = ModuleList()
+        activation_funcs = []
+        for i, conf in enumerate(configs.structure):
+            inputs = self.size**2*self.final_conv if i == 0 else configs.structure[i-1][0]
+            act = resolve_activation_function(conf[1])
+            lin = nn.Linear(inputs, conf[0])
+            modules.append(lin)
+            activation_funcs.append(act)
+            last_outputs = conf[0]
+        self.activation_functions = activation_funcs
+        self.linears = modules
+        return last_outputs
+
 
     def pad(self, input: str or int, length: int = 2, start=True):
         padding = "0" * length
@@ -77,11 +110,12 @@ class HexModel(Model):
 
 
     def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
-        x = self.conv1(x[0])
-        x = self.conv2(x)
+        x = F.relu(self.conv1(x[0]))
         x = x.view(-1)
-        x = self.lin1(x)
-        x = self.lin2(x)
+        for i in range(len(self.linears)):
+            x = self.linears[i](x)
+            x = self.activation_functions[i](x)
+        x = F.relu(self.lin(x))
         x = self.sm(x)
         return x
 

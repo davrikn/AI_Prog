@@ -5,7 +5,7 @@ from os.path import exists
 
 import numpy as np
 import torch.nn as nn
-import torch.nn.functional as F
+
 import torch
 import os
 
@@ -24,6 +24,7 @@ class Model(nn.Module):
     # optimizer: torch.optim.Optimizer
     optimizer: torch.optim.Optimizer
     rbuf_size = 500
+    batch_size = 25
 
     def __init__(self, size: int, classes: int, snapshotdir: os.PathLike):
         super().__init__()
@@ -50,25 +51,6 @@ class Model(nn.Module):
     @abstractmethod
     def gen_action_to_index(self) -> dict[str, int]:
         pass
-
-    def init_model(self):
-        def resolve_activation_function(f: str):
-            if f == 'linear':
-                return F.linear
-            elif f == 'sigmoid':
-                return F.sigmoid
-            elif f == 'tanh':
-                return F.tanh
-            elif f == 'relu':
-                return F.relu
-            else:
-                raise Exception(f"Unknown activation function {f}")
-
-        modules = dict()
-        for i, conf in enumerate(configs.structure):
-            modules[i*2] = nn.Linear(conf[0], conf[1])
-            modules[i*2+1] = resolve_activation_function(conf[2])
-        self.linears = modules
 
 
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
@@ -115,7 +97,7 @@ class Model(nn.Module):
             utils.save_train_data(self.rbuf)
 
         logging.info("Training batch")
-        batchsize = 25 if len(self.rbuf) > 25 else len(self.rbuf)
+        batchsize = self.batch_size if len(self.rbuf) > self.batch_size else len(self.rbuf)
         for i in range(configs.epochs):
             self.train_batch(random.sample(self.rbuf, batchsize))
 
