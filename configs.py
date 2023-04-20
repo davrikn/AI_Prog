@@ -18,19 +18,19 @@ G = 250
 
 # MCTS parameters
 num_episodes = 250
-num_rollouts = 200
+num_rollouts = 300
 decay_rate = 1
 epsilon = 0.25
-structure = [[size**2*20, 128, 'relu'], [128, size**2, 'relu']]
 deepflush = False
 
 # ANET parameters
+structure = [[size**2*20, 128, 'relu'], [128, size**2, 'relu']]
 loss_function = nn.MSELoss()  # SGDLoss
 optimizer = "adam"  # adagrad, sgd, rmsprop or adam
 input_variables = 200
-learning_rate = 0.0001
+learning_rate = 0.001
 num_hidden_layers = 50
-activation_function = 'RELU'
+epochs = 10
 
 # NN model
 model_dir = 'models'

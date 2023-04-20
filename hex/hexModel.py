@@ -9,6 +9,7 @@ import os
 import torch
 from logging import getLogger
 import random
+from torchmetrics import Accuracy
 
 logger = getLogger()
 
@@ -106,7 +107,6 @@ class HexModel(Model):
         x = x.view(self.size, self.size)
         x = x.detach().numpy()
         x = np.rot90(x, k)
-        # x = np.transpose(x)
         x = x.flatten()
 
         return torch.tensor(x, dtype=torch.float, requires_grad=True)
@@ -116,33 +116,28 @@ class HexModel(Model):
         random.shuffle(X)
         for x in X:
             self.preprocess(x[0])
-        epochs = 1
-        for epoch in range(epochs):
-            for i, (_x, _y) in enumerate(X, 1):
-                if i % 100 == 0:
-                    logger.debug(f"Trained on {i} samples")
-                self.optimizer.zero_grad()
-                y = np.zeros(self.classes)
-                for k, v in _y:
-                    y[self.action_to_index[k]] = v
-                y = torch.tensor(y, dtype=torch.float, requires_grad=True, device=device)
-                x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True, device=device), torch.tensor([_x[1]], dtype=torch.float)
-                x = self(x)
-                if _x[1] == -1:
-                    y = self.transpose_actions(y, k=-1)
+        accuracies = []
+        acc = Accuracy(task="multiclass", num_classes=self.classes)
+        for i, (_x, _y) in enumerate(X, 1):
+            if i % 100 == 0:
+                logger.debug(f"Trained on {i} samples")
+            self.optimizer.zero_grad()
+            y = np.zeros(self.classes)
+            for k, v in _y:
+                y[self.action_to_index[k]] = v
+            y = torch.tensor(y, dtype=torch.float, requires_grad=True, device=device)
+            x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True, device=device), torch.tensor([_x[1]], dtype=torch.float)
+            out = self(x)
+            if _x[1] == -1:
+                y = self.transpose_actions(y, k=-1)
 
-                # x = self.remove_invalid_moves(x, y)
+            loss = self.LOSS_FUNCTION(out, y)
+            loss.backward()
+            self.optimizer.step()
+            print(f"\n\nY: {y.detach()}\nX: {x}\nOut: {out.detach()}\nLoss: {loss}")
+            accuracies.append(acc(out, y).item())
 
-                a = list(self.parameters())[0].clone()
-                print(f'Target: {y}')
-                print(f'Pred: {x}')
-                loss = self.LOSS_FUNCTION(x, y)
-                print(f'Loss: {loss}')
-                loss.backward()
-                self.optimizer.step()
-                # print(f"\n\nY: {y.detach()}\nX: {x.detach()}\nOut: {out.detach()}\nLoss: {loss}")
-
-                b = list(self.parameters())[0].clone()
-                # print(torch.equal(a.data, b.data))
-
-
+        tot_acc = 0
+        for accuracy in accuracies:
+            tot_acc += accuracy
+        return tot_acc/len(accuracies)

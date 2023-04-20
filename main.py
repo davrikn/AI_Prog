@@ -48,9 +48,6 @@ def main():
         turns = 0
         utility = game.get_utility()
         while utility == 0:
-            if total_episodes % (50 if saving_intervals > 50 else saving_intervals) == 0:
-                model.flush_rbuf()
-                logger.info(f"Episode: {total_episodes}")
             if total_episodes % saving_intervals == 0:
                 model.save_model(file_name=f'hex_size_{model.size}_checkpoint_{total_episodes}')
                 logger.info(f"Saved model at checkpoint: {total_episodes} episodes")
@@ -68,6 +65,7 @@ def main():
         print(f"Player {1 if utility == 1 else 2} won")
         logger.debug(f"Player {1 if utility == 1 else 2} won")
         logger.debug(f"Total number of turns: {turns}")
+        model.flush_rbuf()
     logger.info("Exiting")
     sys.exit(0)
 

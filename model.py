@@ -72,23 +72,20 @@ class Model(nn.Module):
 
 
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
-        random.shuffle(X)
-        epochs = 1
-        for epoch in range(epochs):
-            for i, (_x, _y) in enumerate(X, 1):
-                if i % 100 == 0:
-                    logger.debug(f"Trained on {i} samples")
-                self.optimizer.zero_grad()
-                y = np.zeros(self.classes)
-                for k, v in _y:
-                    y[self.action_to_index[k]] = v
-                y = torch.tensor(y, dtype=torch.float, requires_grad=True)
-                x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True), torch.tensor([_x[1]], dtype=torch.float)
-                x = self(x)
+        for i, (_x, _y) in enumerate(X, 1):
+            if i % 100 == 0:
+                logger.debug(f"Trained on {i} samples")
+            self.optimizer.zero_grad()
+            y = np.zeros(self.classes)
+            for k, v in _y:
+                y[self.action_to_index[k]] = v
+            y = torch.tensor(y, dtype=torch.float, requires_grad=True)
+            x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True), torch.tensor([_x[1]], dtype=torch.float)
+            x = self(x)
 
-                loss = self.LOSS_FUNCTION(x, y)
-                loss.backward()
-                self.optimizer.step()
+            loss = self.LOSS_FUNCTION(x, y)
+            loss.backward()
+            self.optimizer.step()
 
 
     def resolve_optimizer(self) -> torch.optim.Optimizer:
@@ -104,22 +101,29 @@ class Model(nn.Module):
             raise Exception("Unknown optimizer")
 
     def append_rbuf(self, data: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
-        self.rbuf.extend(data)
+        self.rbuf = data + self.rbuf
+        if len(self.rbuf) > 200:
+            self.rbuf = self.rbuf[:200]
 
     def append_rbuf_single(self, data: tuple[tuple[np.ndarray, int], list[tuple[str, float]]]):
-        self.rbuf.append(data)
+        self.rbuf.insert(0, data)
+        if len(self.rbuf) > 200:
+            self.rbuf = self.rbuf[:200]
 
     def flush_rbuf(self):
-        random.shuffle(self.rbuf)
         if configs.save_data:
             utils.save_train_data(self.rbuf)
 
-        self.train_batch(self.rbuf)
         logging.info("Training batch")
-        self.rbuf = []
-        logging.debug("Saving statedict")
-        # torch.save(self.state_dict(), f"{self.snapshotdir}/{self.name}_size_{self.size}.pth")
-        logging.debug("Finished saving statedict")
+        batchsize = 20 if len(self.rbuf) > 20 else len(self.rbuf)
+        accuracies = []
+        for i in range(configs.epochs):
+            accuracies.append(self.train_batch(random.sample(self.rbuf, batchsize)))
+
+        tot_acc = 0
+        for acc in accuracies:
+            tot_acc += acc
+        print(f"Training accuracy: {tot_acc/len(accuracies)}")
 
     def save_model(self, file_name: str):
         torch.save(self.state_dict(), f"{configs.model_dir}/{file_name}.pt")
