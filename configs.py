@@ -17,7 +17,7 @@ G = 250
 
 
 # MCTS parameters
-num_episodes = 1000
+num_episodes = 200
 num_rollouts = 300
 decay_rate = 1
 epsilon = 0.25

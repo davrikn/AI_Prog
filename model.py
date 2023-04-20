@@ -114,7 +114,7 @@ class Model(nn.Module):
             utils.save_train_data(self.rbuf)
 
         logging.info("Training batch")
-        batchsize = 10 if len(self.rbuf) > 150 else len(self.rbuf)
+        batchsize = 10 if len(self.rbuf) > 10 else len(self.rbuf)
         for i in range(configs.epochs):
             self.train_batch(random.sample(self.rbuf, batchsize))
 
