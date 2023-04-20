@@ -36,13 +36,13 @@ def main():
     else:
         raise Exception(f"Game {configs.game} is not supported")
 
-    saving_intervals = (configs.num_episodes / (configs.M-1))
+    saving_intervals = (configs.num_simulations / (configs.M - 1))
     if not saving_intervals.is_integer():
-        raise Exception(f"Num episodes {configs.num_episodes} must be divisible by M-1 {configs.M-1}")
+        raise Exception(f"Num episodes {configs.num_simulations} must be divisible by M-1 {configs.M - 1}")
 
     total_episodes = 0
     simulations = 0
-    while total_episodes <= configs.num_episodes:
+    while total_episodes <= configs.num_simulations:
         logger.debug(f"\nSimulation counter: {simulations + 1}")
         game = get_game()
         turns = 0

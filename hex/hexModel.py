@@ -22,7 +22,6 @@ class HexModel(Model):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
         self.conv1 = nn.Conv2d(2, 30, 3, 1, 1)
         self.conv2 = nn.Conv2d(30, 20, 3, 1, 1)
-        # self.seq = self.init_model()
         self.lin1 = nn.Linear(20 * boardsize * boardsize, 128)
         self.lin2 = nn.Linear(128, boardsize * boardsize)
         self.sm = nn.Softmax(dim=0)

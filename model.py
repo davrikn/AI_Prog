@@ -29,7 +29,6 @@ class Model(nn.Module):
         self.size = size
         self.classes = classes
         self.snapshotdir = snapshotdir
-        self.init_model()
 
     @abstractmethod
     def preprocess(self, x: tuple[np.ndarray, int]) -> torch.Tensor:
