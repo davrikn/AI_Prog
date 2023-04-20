@@ -102,8 +102,8 @@ class Model(nn.Module):
 
     def append_rbuf(self, data: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
         self.rbuf = data + self.rbuf
-        if len(self.rbuf) > 200:
-            self.rbuf = self.rbuf[:200]
+        if len(self.rbuf) > 150:
+            self.rbuf = self.rbuf[:150]
 
     def append_rbuf_single(self, data: tuple[tuple[np.ndarray, int], list[tuple[str, float]]]):
         self.rbuf.insert(0, data)
@@ -115,7 +115,7 @@ class Model(nn.Module):
             utils.save_train_data(self.rbuf)
 
         logging.info("Training batch")
-        batchsize = 20 if len(self.rbuf) > 20 else len(self.rbuf)
+        batchsize = 150 if len(self.rbuf) > 150 else len(self.rbuf)
         accuracies = []
         for i in range(configs.epochs):
             accuracies.append(self.train_batch(random.sample(self.rbuf, batchsize)))
