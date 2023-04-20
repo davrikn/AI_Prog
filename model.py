@@ -23,6 +23,7 @@ class Model(nn.Module):
     index_to_action: dict[int, str]
     # optimizer: torch.optim.Optimizer
     optimizer: torch.optim.Optimizer
+    rbuf_size = 500
 
     def __init__(self, size: int, classes: int, snapshotdir: os.PathLike):
         super().__init__()
@@ -101,20 +102,20 @@ class Model(nn.Module):
 
     def append_rbuf(self, data: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
         self.rbuf = data + self.rbuf
-        if len(self.rbuf) > 250:
-            self.rbuf = self.rbuf[:250]
+        if len(self.rbuf) > self.rbuf_size:
+            self.rbuf = self.rbuf[:self.rbuf_size]
 
     def append_rbuf_single(self, data: tuple[tuple[np.ndarray, int], list[tuple[str, float]]]):
         self.rbuf.insert(0, data)
-        if len(self.rbuf) > 250:
-            self.rbuf = self.rbuf[:250]
+        if len(self.rbuf) > self.rbuf_size:
+            self.rbuf = self.rbuf[:self.rbuf_size]
 
     def flush_rbuf(self):
         if configs.save_data:
             utils.save_train_data(self.rbuf)
 
         logging.info("Training batch")
-        batchsize = 10 if len(self.rbuf) > 10 else len(self.rbuf)
+        batchsize = 25 if len(self.rbuf) > 25 else len(self.rbuf)
         for i in range(configs.epochs):
             self.train_batch(random.sample(self.rbuf, batchsize))
 

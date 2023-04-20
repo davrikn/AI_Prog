@@ -7,6 +7,7 @@ from os.path import isfile
 import os
 import torch
 from logging import getLogger
+import torch.functional as F
 
 logger = getLogger()
 
@@ -17,9 +18,9 @@ class HexModel(Model):
 
     def __init__(self, boardsize: int, snapshotdir: os.PathLike):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
-        self.conv1 = nn.Conv2d(2, 30, 3, 1, 1)
-        self.conv2 = nn.Conv2d(30, 20, 3, 1, 1)
-        self.lin1 = nn.Linear(20 * boardsize * boardsize, 128)
+        self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
+        self.conv2 = nn.Conv2d(32, 64, 5, 1, 2)
+        self.lin1 = nn.Linear(64 * boardsize * boardsize, 128)
         self.lin2 = nn.Linear(128, boardsize * boardsize)
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
@@ -79,8 +80,6 @@ class HexModel(Model):
         x = self.conv1(x[0])
         x = self.conv2(x)
         x = x.view(-1)
-        # for i in range(len(configs.structure)*2):
-        #     x = self.linears[i](x)
         x = self.lin1(x)
         x = self.lin2(x)
         x = self.sm(x)

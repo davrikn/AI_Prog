@@ -9,15 +9,16 @@ from tournament import Tournament
 
 agent0 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_0.pt")
                   , name="Checkpoint0Agent")
-agent50 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_50.pt")
+agent50 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_10.pt")
                    , name="Checkpoint50Agent")
-agent100 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_100.pt")
+agent100 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_20.pt")
                     , name="Checkpoint100Agent")
-agent150 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_150.pt")
+agent150 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_30.pt")
                     , name="Checkpoint150Agent")
-agent200 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_200.pt")
+agent200 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_40.pt")
                     , name="Checkpoint200Agent")
 
+#tournament = Tournament([agent0, agent50], G=configs.G, UI=False)
 tournament = Tournament([agent0, agent50, agent100, agent150, agent200], G=configs.G, UI=False)
 # tournament = Tournament([test200, test300, test400, test0, test1000, test100], G=150, UI=True)
 
