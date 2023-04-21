@@ -93,14 +93,11 @@ class MonteCarlo:
             # Tree Search using Tree Policy
             leaf_node = self.tree_search()
 
-            # Stop the loop if the entire state-tree is generated
-            if leaf_node.state.is_final_state():
-                logger.debug("Exiting after reaching final state")
-                break
-
             # Expand the leaf node
             expand_start = time.perf_counter()
-            leaf_node.expand()
+            if not leaf_node.state.is_final_state():
+                leaf_node.expand()
+
             # self.check_child_is_win(leaf_node.children)
 
             expand_end = time.perf_counter()
@@ -121,28 +118,10 @@ class MonteCarlo:
         logger.debug(f"Average rollout duration: {self.rollout_time/self.rollouts}. Rollout count: {self.rollouts}. Total rollout time: {self.rollout_time}")
         logger.debug(f"Average expand duration: {self.expand_time/self.expands}. Expand count: {self.expands}. Total expand time: {self.expand_time}")
 
+        self.flush_train_data()
         return self.get_most_visited_edge()
 
-    def check_child_is_win(self, children: list[MonteCarloNode]):
-        for child in children:
-            if child.state.get_utility() == child.parent.state.player:
-                child.visits = 1e6
-            elif child.state.get_utility() == child.parent.state.player * -1:
-                child.visits = 1e5
-
     def get_most_visited_edge(self) -> MonteCarloNode:
-        if any(x.state.is_final_state() for x in self.root.children):
-            self.root.visits = 1
-            for child in self.root.children:
-                if child.state.get_utility() == self.root.state.player:
-                    child.visits = 1
-                    self.root.visits += 1
-                else:
-                    child.visits = 0
-
-
-        self.flush_train_data() ## TODO: Refactor out
-
         highest_visit_count = sorted(self.root.children, reverse=True, key=lambda child: child.visits)[0].visits
         most_visited_edges = [self.root.children[i] for i in range(len(self.root.children))
                               if self.root.children[i].visits == highest_visit_count]
@@ -158,6 +137,8 @@ class MonteCarlo:
         node = self.root
 
         while node.is_expanded():
+            if node.state.is_final_state():
+                return node
             node = node.select_next_child()
         return node
 
