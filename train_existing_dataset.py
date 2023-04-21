@@ -15,7 +15,7 @@ def train_model():
     model = HexModel(configs.size, snapshotdir=None)
     data = load_train_data(hex_4x4_path)
     random.shuffle(data)
-    batch_size = 50
+    batch_size = 20
     for i in range(0, len(data), batch_size):
         model.append_rbuf(data[i:i+batch_size])
         if i % batch_size == 0:

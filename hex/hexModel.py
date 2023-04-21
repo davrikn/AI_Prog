@@ -100,19 +100,8 @@ class HexModel(Model):
                 k += 1
         return action_to_index_transpose
 
-    def preprocess(self, x: tuple[np.ndarray, int]) -> None:
-        if x[1] == -1:
-            temp = copy.deepcopy(x[0][0])
-            x[0][0] = x[0][1]
-            x[0][1] = temp
-            x[0][0] = np.rot90(x[0][0], k=-1)
-            x[0][1] = np.rot90(x[0][1], k=-1)
-            # x[0][0] = np.transpose(x[0][0])
-            # x[0][1] = np.transpose(x[0][1])
-
-
-    def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
-        x = F.relu(self.conv1(x[0]))
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
         x = x.view(-1)
         # for i in range(len(self.linears)):
@@ -124,48 +113,54 @@ class HexModel(Model):
         return x
 
     def classify(self, x: tuple[np.ndarray, int]) -> list[tuple[str, float]]:
-        _player = x[1]
-        self.preprocess(x)
-        x = tensor(x[0], dtype=torch.float, device=device), tensor([x[1]], dtype=torch.float)
-        x = self(x)
-        if _player == -1:
-            x = self.transpose_actions(x)
-            # x = x.detach().numpy()
-            # actions = [(self.index_to_action_transpose[idx], probability) for idx, probability in enumerate(x)]
+        with torch.no_grad():
+            p = x[1]
+            x = x[0]
+            if p == -1:
+                x = self.transform(x)
+            x = tensor(x, dtype=torch.float)
+            x = self(x).numpy()
 
-        x = x.detach().numpy()
-        actions = [(self.index_to_action[idx], probability) for idx, probability in enumerate(x)]
-        # sorted_actions = [x for _, x in sorted(zip(x, actions), key=lambda pair: pair[0], reverse=True)]
-        # return list(map(lambda x: self.index_to_action[x], np.argsort(x)))
-        # return sorted_actions
-        return sorted(actions, key=lambda tup: tup[1])
+            if p == -1:
+                x = self.transform_target(x, k=1)
 
-    def transpose_actions(self, x, k=1):
-        x = x.view(self.size, self.size)
-        x = x.detach().numpy()
+            actions = [(self.index_to_action[idx], probability) for idx, probability in enumerate(x)]
+            return sorted(actions, key=lambda tup: tup[1])
+
+    def transform(self, x: np.ndarray) -> np.ndarray:
+        _x1 = x[1].copy()
+        x[1] = x[0]
+        x[0] = _x1
+
+        x[0] = np.rot90(x[0], -1)
+        x[1] = np.rot90(x[1], -1)
+        return x
+
+    def transform_target(self, x: np.ndarray, k=1) -> np.ndarray:
+        x = np.reshape(x, (self.size, self.size))
         x = np.rot90(x, k)
-        x = x.flatten()
-
-        return torch.tensor(x, dtype=torch.float, requires_grad=True)
-
+        return x.flatten()
 
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
-        for x in X:
-            self.preprocess(x[0])
-        for i, (_x, _y) in enumerate(X, 1):
-            if i % 100 == 0:
-                logger.debug(f"Trained on {i} samples")
-            self.optimizer.zero_grad()
-            y = np.zeros(self.classes)
-            for k, v in _y:
-                y[self.action_to_index[k]] = v
-            y = torch.tensor(y, dtype=torch.float, requires_grad=True, device=device)
-            x = torch.tensor(_x[0], dtype=torch.float, requires_grad=True, device=device), torch.tensor([_x[1]], dtype=torch.float)
-            out = self(x)
-            if _x[1] == -1:
-                y = self.transpose_actions(y, k=-1)
+        for x, _y in X:
 
+            p = x[1]
+            x = x[0]
+            y = np.zeros(self.classes)
+
+            for i, (k, v) in enumerate(_y):
+                y[self.action_to_index[k]] = v
+
+            if p == -1:
+                x = self.transform(x)
+                y = self.transform_target(y, k=-1)
+            y = tensor(y, dtype=torch.float, requires_grad=False)
+            x = tensor(x, dtype=torch.float, requires_grad=True)
+
+
+            self.optimizer.zero_grad()
+            out = self(x)
             loss = self.LOSS_FUNCTION(out, y)
             loss.backward()
             self.optimizer.step()
-            # print(f"\n\nY: {y.detach()}\nX: {x}\nOut: {out.detach()}\nLoss: {loss}")
+            #print(f"\n\nY: {y.detach()}\nX: {x.detach()}\nOut: {out.detach()}\nLoss: {loss}")
