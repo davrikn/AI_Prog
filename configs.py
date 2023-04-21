@@ -13,7 +13,7 @@ simulations = 25
 log_level: int = logging.INFO
 save_data = False
 M = 21
-G = 250
+G = 500
 
 
 # MCTS parameters

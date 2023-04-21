@@ -22,9 +22,10 @@ class HexModel(Model):
     def __init__(self, boardsize: int, snapshotdir: os.PathLike):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
         self.conv1 = nn.Conv2d(2, 30, 3, 1, 1)
-        self.conv2 = nn.Conv2d(30, self.final_conv, 3, 1, 1)
-        final_out = self.init_model()
-        self.lin = nn.Linear(final_out, boardsize * boardsize)
+        self.conv2 = nn.Conv2d(30, 20, 3, 1, 1)
+        # final_out = self.init_model()
+        self.lin1 = nn.Linear(20 * boardsize * boardsize, 64)
+        self.lin2 = nn.Linear(64, boardsize * boardsize)
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
@@ -114,10 +115,11 @@ class HexModel(Model):
         x = F.relu(self.conv1(x[0]))
         x = F.relu(self.conv2(x))
         x = x.view(-1)
-        for i in range(len(self.linears)):
-            x = self.linears[i](x)
-            x = self.activation_functions[i](x)
-        x = F.relu(self.lin(x))
+        # for i in range(len(self.linears)):
+        #     x = self.linears[i](x)
+        #     x = self.activation_functions[i](x)
+        x = F.relu(self.lin1(x))
+        x = F.relu(self.lin2(x))
         x = self.sm(x)
         return x
 
