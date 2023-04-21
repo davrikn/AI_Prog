@@ -61,10 +61,11 @@ class ReinforcementLearning:
             logger.debug(f"Total number of turns: {turns}")
 
             if episodes % saving_intervals == 0:
-                model.save_model(file_name=f'hex_size_{model.size}_checkpoint_{episodes}')
+                model.save_model(file_name=f'{configs.game}_size_{model.size}_checkpoint_{episodes}')
                 logger.info(f"Saved model at checkpoint: {episodes} episodes")
             model.flush_rbuf()
             episodes += 1
+            configs.epsilon *= configs.epsilon_decay
         logger.info("Exiting")
         sys.exit(0)
 

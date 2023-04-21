@@ -21,6 +21,7 @@ num_episodes = 200
 num_rollouts = 300
 decay_rate = 1
 epsilon = 0.25
+epsilon_decay = 0.99
 deepflush = False
 
 # ANET parameters
@@ -29,7 +30,6 @@ loss_function = nn.MSELoss()  # SGDLoss
 optimizer = "adam"  # adagrad, sgd, rmsprop or adam
 input_variables = 200
 learning_rate = 0.001
-num_hidden_layers = 50
 epochs = 25
 
 # NN model

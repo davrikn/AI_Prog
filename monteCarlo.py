@@ -64,10 +64,6 @@ class MonteCarloNode:
             return sorted(self.children, reverse=True,
                           key=cmp_to_key(lambda node1, node2: node1.a_t_max() - node2.a_t_max()))[0]
         if self.state.player == -1:
-            if not self.children:
-                print("TEST:", self.state)
-
-
             return sorted(self.children,
                           key=cmp_to_key(lambda node1, node2: node1.a_t_min() - node2.a_t_min()))[0]
 
