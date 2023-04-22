@@ -8,41 +8,41 @@ from monteCarlo import MonteCarlo, MonteCarloNode
 from tournament import Tournament
 
 agent0 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_0.pt")
-                  , name="Checkpoint0Agent")
-agent10 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_10.pt")
-                   , name="Checkpoint10Agent")
-agent20 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_20.pt")
-                   , name="Checkpoint20Agent")
-agent40 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_40.pt")
-                   , name="Checkpoint40Agent")
+                  , name="0")
+agent25 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_25.pt")
+                   , name="25")
 agent50 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_50.pt")
-                   , name="Checkpoint50Agent")
+                   , name="50")
 # agent60 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_60.pt")
 #                    , name="Checkpoint60Agent")
 agent100 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_100.pt")
-                    , name="Checkpoint100Agent")
+                    , name="100")
 agent150 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_150.pt")
-                    , name="Checkpoint150Agent")
-# agent200 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_200.pt")
-#                     , name="Checkpoint200Agent")
-tournament = Tournament([agent0, agent50, agent100], G=configs.G, UI=False)
+                    , name="150")
+agent200 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_200.pt")
+                    , name="200")
+agent250 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_250.pt")
+                    , name="250")
+agent300 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_300.pt")
+                    , name="300")
+tournament = Tournament([agent0, agent25, agent50, agent100, agent150, agent200, agent250, agent300], G=configs.G, UI=False)
 # tournament = Tournament([agent0, agent50, agent100, agent150, agent200], G=configs.G, UI=False)
 
 
 tournament.run_tournament()
 
-test100 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_4_checkpoint_100.pt")
+test100 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_4_checkpoint_275.pt")
                   ,name="model_0")
 test0 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_4_checkpoint_0.pt")
                   ,name="model_0")
 
 # TODO: Delete, just testing
 def agent_vs_mcts():
-    for i in range(25):
-        player_to_move = 1
+    for i in range(500):
+        player_to_move = 2
         game = HexWorld(size=configs.size)
         while True:
-            if player_to_move == 2:
+            if player_to_move == 1:
                 # game = MonteCarlo(game, model=None).run()
                 if type(game) is MonteCarloNode:
                     game = test100.perform_move_greedy(game.state)
@@ -50,11 +50,11 @@ def agent_vs_mcts():
                     game = test100.perform_move_greedy(game)
                 print(game, "\n")
                 if game.is_final_state():
-                    test0.losses += 1
-                    print("MCTS WON")
+                    test100.wins += 1
+                    print("TRAINED MODEL WON")
                     break
-                player_to_move = 1
-            elif player_to_move == 1:
+                player_to_move = 2
+            elif player_to_move == 2:
                 if type(game) is MonteCarloNode:
                     game = test0.perform_move_random(game.state)
                     # game = test100.perform_move_greedy(game.state)
@@ -65,11 +65,11 @@ def agent_vs_mcts():
                     # game = test0.perform_move_probabilistic(game)
                 print(game, "\n")
                 if game.is_final_state():
-                    test0.wins += 1
+                    test100.losses += 1
                     print("RANDOM WON")
                     break
-                player_to_move = 2
-    print(f'Random wins: {test0.wins}, Random losses: {test0.losses}')
+                player_to_move = 1
+    print(f'TRAINED MODEL wins: {test100.wins}, TRAINED MODEL losses: {test100.losses}')
 
 
 # agent_vs_mcts()

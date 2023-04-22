@@ -1,6 +1,7 @@
 import logging
 import random
 from abc import abstractmethod
+import copy
 from os.path import exists
 
 import numpy as np
@@ -99,7 +100,8 @@ class Model(nn.Module):
         logging.info("Training batch")
         batchsize = self.batch_size if len(self.rbuf) > self.batch_size else len(self.rbuf)
         for i in range(configs.epochs):
-            self.train_batch(random.sample(self.rbuf, batchsize))
+            buffer = copy.deepcopy(random.sample(self.rbuf, batchsize))
+            self.train_batch(buffer)
 
     def save_model(self, file_name: str):
         torch.save(self.state_dict(), f"{configs.model_dir}/{file_name}.pt")

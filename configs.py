@@ -17,11 +17,11 @@ G = 500
 
 
 # MCTS parameters
-num_episodes = 200
-num_rollouts = 300
+num_episodes = 500
+num_rollouts = 150
 decay_rate = 1
-epsilon = 0.25
-epsilon_decay = 0.99
+epsilon = 0.9
+epsilon_decay = 0.985
 deepflush = False
 
 # ANET parameters

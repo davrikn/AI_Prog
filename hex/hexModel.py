@@ -21,8 +21,8 @@ class HexModel(Model):
 
     def __init__(self, boardsize: int, snapshotdir: os.PathLike):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
-        self.conv1 = nn.Conv2d(2, 30, 3, 1, 1)
-        self.conv2 = nn.Conv2d(30, 20, 3, 1, 1)
+        self.conv1 = nn.Conv2d(2, 20, 3, 1, 1)
+        # self.conv2 = nn.Conv2d(30, 20, 3, 1, 1)
         # final_out = self.init_model()
         self.lin1 = nn.Linear(20 * boardsize * boardsize, 64)
         self.lin2 = nn.Linear(64, boardsize * boardsize)
@@ -102,7 +102,7 @@ class HexModel(Model):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
+        # x = F.relu(self.conv2(x))
         x = x.view(-1)
         # for i in range(len(self.linears)):
         #     x = self.linears[i](x)
@@ -118,14 +118,15 @@ class HexModel(Model):
             x = x[0]
             if p == -1:
                 x = self.transform(x)
+
             x = tensor(x, dtype=torch.float)
-            x = self(x).numpy()
+            pred = self(x).numpy()
 
             if p == -1:
-                x = self.transform_target(x, k=1)
+                pred = self.transform_target(pred, k=1)
 
-            actions = [(self.index_to_action[idx], probability) for idx, probability in enumerate(x)]
-            return sorted(actions, key=lambda tup: tup[1])
+            actions = [(self.index_to_action[idx], probability) for idx, probability in enumerate(pred)]
+            return sorted(actions, key=lambda tup: tup[1], reverse=True)
 
     def transform(self, x: np.ndarray) -> np.ndarray:
         _x1 = x[1].copy()
@@ -143,7 +144,6 @@ class HexModel(Model):
 
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
         for x, _y in X:
-
             p = x[1]
             x = x[0]
             y = np.zeros(self.classes)
@@ -157,10 +157,9 @@ class HexModel(Model):
             y = tensor(y, dtype=torch.float, requires_grad=False)
             x = tensor(x, dtype=torch.float, requires_grad=True)
 
-
             self.optimizer.zero_grad()
             out = self(x)
             loss = self.LOSS_FUNCTION(out, y)
             loss.backward()
             self.optimizer.step()
-            #print(f"\n\nY: {y.detach()}\nX: {x.detach()}\nOut: {out.detach()}\nLoss: {loss}")
+            print(f"\n\nY: {y.detach()}\nX: {x.detach()}\nOut: {out.detach()}\nLoss: {loss}")

@@ -87,7 +87,7 @@ class Tournament:
 
     def print_final_scoreboard(self):
         self.agents = sorted(self.agents, reverse=True, key=lambda agent: agent.wins)
-        print('\nAgent name \t\t\t\t Wins \t\t Losses \t\t Win rate')
+        print('\nAgent name \t\t\t Wins \t\t Losses \t\t Win rate')
         for agent in self.agents:
-            print(f'{agent.name} \t\t {agent.wins} \t\t {agent.losses} \t\t {agent.wins/(agent.wins +agent.losses)}%')
+            print(f'{agent.name} \t\t\t {agent.wins} \t\t {agent.losses} \t\t {agent.wins/(agent.wins +agent.losses)}%')
 
