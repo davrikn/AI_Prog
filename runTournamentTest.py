@@ -21,17 +21,22 @@ agent150 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_d
                     , name="150")
 agent200 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_200.pt")
                     , name="200")
-agent250 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_250.pt")
-                    , name="250")
-agent300 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_300.pt")
-                    , name="300")
-tournament = Tournament([agent0, agent25, agent50, agent100, agent150, agent200, agent250, agent300], G=configs.G, UI=False)
+#
+# agent250 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_250.pt")
+#                     , name="250")
+# agent300 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_300.pt")
+#                     , name="300")
+# agent350 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_350.pt")
+#                     , name="350")
+# agent400 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + f"/hex_size_{configs.size}_checkpoint_400.pt")
+#                     , name="400")
+tournament = Tournament([agent0, agent25, agent50, agent100, agent150, agent200], G=configs.G, UI=False)
 # tournament = Tournament([agent0, agent50, agent100, agent150, agent200], G=configs.G, UI=False)
 
 
 tournament.run_tournament()
 
-test100 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_4_checkpoint_275.pt")
+test100 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_4_checkpoint_150.pt")
                   ,name="model_0")
 test0 = HexAgent(HexModel(boardsize=configs.size, snapshotdir=configs.model_dir + "/hex_size_4_checkpoint_0.pt")
                   ,name="model_0")

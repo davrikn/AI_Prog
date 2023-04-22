@@ -24,7 +24,7 @@ class HexAgent:
             return new_dist
 
         def scale_weights(w):
-            scaled_weights = [x**8 for x in w]
+            scaled_weights = [x**5 for x in w]
             return scaled_weights/np.sum(scaled_weights)
 
 

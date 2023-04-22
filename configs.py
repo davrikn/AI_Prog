@@ -31,7 +31,7 @@ optimizer = "adam"  # adagrad, sgd, rmsprop or adam
 input_variables = 200
 learning_rate = 0.001
 num_hidden_layers = 50
-epochs = 20
+epochs = 50
 
 # NN model
 model_dir = 'models'

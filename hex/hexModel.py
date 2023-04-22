@@ -21,11 +21,12 @@ class HexModel(Model):
 
     def __init__(self, boardsize: int, snapshotdir: os.PathLike):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
-        self.conv1 = nn.Conv2d(2, 20, 3, 1, 1)
-        # self.conv2 = nn.Conv2d(30, 20, 3, 1, 1)
+        self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
+        self.conv2 = nn.Conv2d(32, 64, 5, 1, 2)
+        self.lin1 = nn.Linear(boardsize ** 2 * 64, 256)
+        self.lin2 = nn.Linear(256, 128)
+        self.lin3 = nn.Linear(128, boardsize ** 2)
         # final_out = self.init_model()
-        self.lin1 = nn.Linear(20 * boardsize * boardsize, 64)
-        self.lin2 = nn.Linear(64, boardsize * boardsize)
         self.sm = nn.Softmax(dim=0)
         self.action_to_index = self.gen_action_index_dict()
         self.index_to_action = {v: k for k, v in self.action_to_index.items()}
@@ -102,13 +103,14 @@ class HexModel(Model):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = F.relu(self.conv1(x))
-        # x = F.relu(self.conv2(x))
+        x = F.relu(self.conv2(x))
         x = x.view(-1)
         # for i in range(len(self.linears)):
         #     x = self.linears[i](x)
         #     x = self.activation_functions[i](x)
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
+        x = F.relu(self.lin3(x))
         x = self.sm(x)
         return x
 
@@ -143,6 +145,8 @@ class HexModel(Model):
         return x.flatten()
 
     def train_batch(self, X: list[tuple[tuple[np.ndarray, int], list[tuple[str, float]]]]):
+        self.optimizer.zero_grad()
+
         for x, _y in X:
             p = x[1]
             x = x[0]
@@ -157,9 +161,8 @@ class HexModel(Model):
             y = tensor(y, dtype=torch.float, requires_grad=False)
             x = tensor(x, dtype=torch.float, requires_grad=True)
 
-            self.optimizer.zero_grad()
             out = self(x)
             loss = self.LOSS_FUNCTION(out, y)
             loss.backward()
-            self.optimizer.step()
-            print(f"\n\nY: {y.detach()}\nX: {x.detach()}\nOut: {out.detach()}\nLoss: {loss}")
+        self.optimizer.step()
+        # print(f"\n\nY: {y.detach()}\nX: {x.detach()}\nOut: {out.detach()}\nLoss: {loss}")
