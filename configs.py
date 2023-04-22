@@ -7,7 +7,7 @@ import torch.nn as nn
 
 game = 'hex'
 display_UI = False
-size = 4
+size = 7
 OHT_size = 7
 simulations = 25
 log_level: int = logging.INFO
@@ -17,10 +17,10 @@ G = 500
 
 
 # MCTS parameters
-num_episodes = 500
-num_rollouts = 150
+num_episodes = 200
+num_rollouts = 250
 decay_rate = 1
-epsilon = 0.9
+epsilon = 0.5
 epsilon_decay = 0.985
 deepflush = False
 

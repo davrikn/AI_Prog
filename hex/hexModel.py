@@ -162,4 +162,4 @@ class HexModel(Model):
             loss = self.LOSS_FUNCTION(out, y)
             loss.backward()
             self.optimizer.step()
-            print(f"\n\nY: {y.detach()}\nX: {x.detach()}\nOut: {out.detach()}\nLoss: {loss}")
+            #print(f"\n\nY: {y.detach()}\nX: {x.detach()}\nOut: {out.detach()}\nLoss: {loss}")
