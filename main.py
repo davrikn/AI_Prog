@@ -29,7 +29,7 @@ class ReinforcementLearning:
             get_game = lambda: HexWorld(size=configs.size)
             get_ui = lambda model: HexUI(get_game(), model)
             # model = HexModel(configs.size, './model_dicts')
-            model = HexModel(configs.size, snapshotdir=None)
+            model = HexModel(configs.size, snapshotdir='./models/hex_size_7_checkpoint_60.pt')
         elif configs.game == 'nim':
             get_game = lambda: NimSimWorld(size=configs.size)
             get_ui = lambda model: NimUI(get_game(), model)
@@ -61,7 +61,7 @@ class ReinforcementLearning:
             logger.debug(f"Total number of turns: {turns}")
 
             if episodes % saving_intervals == 0:
-                model.save_model(file_name=f'{configs.game}_size_{model.size}_checkpoint_{episodes}')
+                model.save_model(file_name=f'{configs.game}_size_{model.size}_checkpoint_{episodes+60}')
                 logger.info(f"Saved model at checkpoint: {episodes} episodes")
             model.flush_rbuf()
             episodes += 1

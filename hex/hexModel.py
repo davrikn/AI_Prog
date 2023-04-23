@@ -23,7 +23,8 @@ class HexModel(Model):
         super().__init__(boardsize, boardsize * boardsize, snapshotdir)
         self.conv1 = nn.Conv2d(2, 32, 3, 1, 1)
         self.conv2 = nn.Conv2d(32, 64, 5, 1, 2)
-        self.lin1 = nn.Linear(boardsize ** 2 * 64, 256)
+        self.conv3 = nn.Conv2d(64, 128, 7, 1, 3)
+        self.lin1 = nn.Linear(boardsize ** 2 * 128, 256)
         self.lin2 = nn.Linear(256, 128)
         self.lin3 = nn.Linear(128, boardsize ** 2)
         # final_out = self.init_model()
@@ -104,6 +105,7 @@ class HexModel(Model):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
+        x = F.relu(self.conv3(x))
         x = x.view(-1)
         # for i in range(len(self.linears)):
         #     x = self.linears[i](x)
