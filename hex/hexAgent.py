@@ -99,10 +99,27 @@ class HexAgent:
         player2_board = np.reshape(player2_board, (configs.OHT_size, configs.OHT_size))
         board = np.stack((player1_board, player2_board), axis=0)
 
-        player_to_move = 1 if player_to_move == 1 else -1
-        x = (board, player_to_move)
+        def map_state(v: str):
+            if v == 1:
+                return [1,0]
+            elif v == 2:
+                return [0,1]
+            else:
+                return [0, 0]
+        print(f"Player: {player_id}")
+        print(state)
+        print(np.reshape(np.array([x for x in state]), (7,7)))
+        #hb = np.array([map_state(x) for x in state])
+        #hb = np.reshape(hb, (7, 7, 2))
+        #w = HexWorld(7)
+        #w.board = hb
+        #print(w)
+
+        player_to_move = 1 if player_to_move == 1 else -1 # == 1
+        x = (board, 1)
 
         pred = self.model.classify(x)
+        print(pred)
         actions = [action[0] for action in pred]
         actions_tuples = []
         for action in actions:
@@ -113,6 +130,7 @@ class HexAgent:
         full_board = np.reshape(state, (configs.OHT_size, configs.OHT_size))
         for move in actions_tuples:
             if full_board[move[0]][move[1]] == 0:
+                print(f"Chosen move: {move}")
                 return move
 
 

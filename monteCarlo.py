@@ -161,7 +161,7 @@ class MonteCarlo:
         node.total_score += value
 
         if node.parent is not None:
-            self.backpropagate(node.parent, value * configs.Sdecay_rate)
+            self.backpropagate(node.parent, value * configs.decay_rate)
 
     def flush_train_data(self):
         if self.model is None:

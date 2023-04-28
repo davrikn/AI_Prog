@@ -5,7 +5,7 @@ from ActorClient import ActorClient
 from hex.hexModel import HexModel
 
 actor = HexAgent(model=HexModel(boardsize=7,
-                                snapshotdir=configs.model_dir + 'hex_size_7_checkpoint_60.pt'), name="OHT")
+                                snapshotdir=configs.model_dir + 'hex_size_7_checkpoint_80.pt'), name="OHT")
 
 
 # Import and override the `handle_get_action` hook in ActorClient

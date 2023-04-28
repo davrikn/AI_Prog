@@ -41,7 +41,7 @@ class ReinforcementLearning:
         if not saving_intervals.is_integer():
             raise Exception(f"Num episodes {configs.num_episodes} must be divisible by M-1 {configs.M - 1}")
 
-        episodes = 0
+        episodes = 60
         while episodes <= configs.num_episodes:
             print(f"\nEpisode counter: {episodes + 1}")
             game = get_game()
@@ -61,7 +61,7 @@ class ReinforcementLearning:
             logger.debug(f"Total number of turns: {turns}")
 
             if episodes % saving_intervals == 0:
-                model.save_model(file_name=f'{configs.game}_size_{model.size}_checkpoint_{episodes+60}')
+                model.save_model(file_name=f'{configs.game}_size_{model.size}_checkpoint_{episodes}')
                 logger.info(f"Saved model at checkpoint: {episodes} episodes")
             model.flush_rbuf()
             episodes += 1

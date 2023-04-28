@@ -162,24 +162,79 @@ class HexWorld(Game):
 
 if __name__ == "__main__":
     # No-win scenario
-    world = HexWorld(4)
-    world = HexWorld(4).apply("0000").apply("0303").apply("0100")
-    print(world)
-    print(f"Current player: {world.player}")
-    print(f"Utility: {world.get_utility()}\n")
-
-    # P1 win scenario
-    world = HexWorld(4)
-    world = HexWorld(4).apply("0000").apply("0303").apply("0100").apply("0201").apply("0200").apply("0202").apply("0300")
-    print(world)
-    print(f"Current player: {world.player}")
-    print(f"Utility: {world.get_utility()}\n")
-
-
-    # P2 win scenario
-    world = HexWorld(4)
-    world = HexWorld(4).apply("0000").apply("0300").apply("0100").apply("0201").apply("0200").apply("0202").apply("0101").apply("0203")
-    print(world)
-    print(f"Current player: {world.player}")
-    print(f"Utility: {world.get_utility()}\n")
+    #world = HexWorld(4)
+    #world = HexWorld(4).apply("0000").apply("0303").apply("0100")
+    #print(world)
+    #print(f"Current player: {world.player}")
+    #print(f"Utility: {world.get_utility()}\n")
+    #
+    ## P1 win scenario
+    #world = HexWorld(4)
+    #world = HexWorld(4).apply("0000").apply("0303").apply("0100").apply("0201").apply("0200").apply("0202").apply("0300")
+    #print(world)
+    #print(f"Current player: {world.player}")
+    #print(f"Utility: {world.get_utility()}\n")
+    #
+    #
+    ## P2 win scenario
+    #world = HexWorld(4)
+    #world = HexWorld(4).apply("0000").apply("0300").apply("0100").apply("0201").apply("0200").apply("0202").apply("0101").apply("0203")
+    #print(world)
+    #print(f"Current player: {world.player}")
+    #print(f"Utility: {world.get_utility()}\n")
+    w = HexWorld(7)
+    w.board = [[
+        [1,0],
+        [1,0],
+        [1,0],
+        [0,1],
+        [0,1],
+        [1,0],
+        [0,1]],[
+        [0,1],
+        [1,0],
+        [1,0],
+        [0,1],
+        [1,0],
+        [0,1],
+        [1,0]],[
+        [1,0],
+        [1,0],
+        [1,0],
+        [1,0],
+        [1,0],
+        [1,0],
+        [0,1]],[
+        [1,0],
+        [0,1],
+        [1,0],
+        [1,0],
+        [1,0],
+        [1,0],
+        [0,1]],[
+        [0,1],
+        [0,1],
+        [0,1],
+        [0,1],
+        [0,1],
+        [1,0],
+        [1,0]],[
+        [1,0],
+        [0,1],
+        [0,1],
+        [0,0],
+        [0,0],
+        [0,1],
+        [1,0]],[
+        [0,1],
+        [0,1],
+        [0,1],
+        [0,1],
+        [0,1],
+        [0,1],
+        [1,0]]]
+    print(w.board)
+    print(w.is_final_state())
+    print(w.check_player_won(1))
+    print(w.check_player_won(2))
 
