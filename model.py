@@ -24,7 +24,7 @@ class Model(nn.Module):
     index_to_action: dict[int, str]
     # optimizer: torch.optim.Optimizer
     optimizer: torch.optim.Optimizer
-    rbuf_size = 300
+    rbuf_size = 500
     batch_size = 32
 
     def __init__(self, size: int, classes: int, snapshotdir: os.PathLike):

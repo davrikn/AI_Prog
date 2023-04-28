@@ -7,21 +7,21 @@ import torch.nn as nn
 
 game = 'hex'
 display_UI = False
-size = 4
+size = 7
 OHT_size = 7
 simulations = 25
 log_level: int = logging.INFO
 save_data = False
-M = 21
-G = 500
+M = 41
+G = 250
 
 
 # MCTS parameters
-num_episodes = 500
-num_rollouts = 150
+num_episodes = 1000
+num_rollouts = 500
 decay_rate = 1
 epsilon = 0.9
-epsilon_decay = 0.985
+epsilon_decay = 0.99
 deepflush = False
 
 # ANET parameters
@@ -31,7 +31,7 @@ optimizer = "adam"  # adagrad, sgd, rmsprop or adam
 input_variables = 200
 learning_rate = 0.001
 num_hidden_layers = 50
-epochs = 50
+epochs = 75
 
 # NN model
 model_dir = 'models'

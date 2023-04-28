@@ -66,8 +66,8 @@ class ReinforcementLearning:
             model.flush_rbuf()
             episodes += 1
             configs.epsilon *= configs.epsilon_decay
-            if configs.epsilon < 0.2:
-                configs.epsilon = 0.2
+            if configs.epsilon < 0.3:
+                configs.epsilon = 0.3
         logger.info("Exiting")
         sys.exit(0)
 
